@@ -400,6 +400,17 @@ body.nogm #homeLv,body.nogm #homeMs,body.nogm #homeSt{display:none!important}
 @media(min-width:700px){#p-home>#homeMode{grid-column:1/-1}}
 body.simple #p-home>.grid2,body.simple #catch{display:none!important}
 #adCard svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ===== v11 ===== */
+#v11dlg .box{text-align:start;max-width:460px;max-height:90vh;overflow:auto}#v11dlg .v11a{margin-top:1rem;justify-content:flex-end}#v11dlg input{font:inherit}
+#homeWb,#homeLf,#homeFw{display:block}#homeWb[hidden],#homeLf[hidden],#homeFw[hidden]{display:none!important}
+#homeLf{border-color:var(--bad)}
+@media(min-width:700px){#p-home>#homeWb,#p-home>#homeLf,#p-home>#homeFw{grid-column:1/-1}}
+#mqCard summary,#homeFw summary{cursor:pointer}
+#mqCard input[type=time],#syPb input[type=password]{padding:.4rem .6rem;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--tx)}
+#syPb input[type=password]{width:100%}
+/* the older one-line welcome card is replaced by the new Welcome back card */
+#homeCb{display:none!important}
 #instHome{border-color:var(--pri,#1b7f85);background:linear-gradient(135deg,var(--card),var(--pill))}
 .instH{display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap}
 .instT{display:flex;flex-direction:column;gap:.15rem;min-width:0;flex:1 1 200px}
@@ -606,7 +617,7 @@ const nl=()=>({status:"Not Logged",reason:""});
 let T,TD,FRI,D=load(),lock={on:false,z:"",t:33,c:0},tab="quran";
 
 function setToday(){const s=iso(new Date());if(s===T)return false;T=s;TD=new Date(s+"T00:00:00");FRI=TD.getDay()===5;return true}
-function load(){try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&r.days)return fix(r)}catch(e){}return fix({days:{}})}
+function load(){let raw=null;try{raw=localStorage.getItem(KEY)}catch(e){}try{const r=JSON.parse(raw);if(r&&r.days)return fix(r)}catch(e){}if(raw){window.__lf=1;try{localStorage.setItem(KEY+"_bad",raw)}catch(e){}}return fix({days:{}})}
 function fix(r){r.custom_zikr=r.custom_zikr||[...ZK];r.reflections=r.reflections||[...RF];r.qada_done=r.qada_done||0;r.custom_surahs=r.custom_surahs||[];r.fav_surahs=r.fav_surahs||[];r.fav_duas=r.fav_duas||[];r.loc=r.loc||{lat:31.5204,lng:74.3587,m:"karachi",h:true};r.pin=r.pin||null;r.blur=!!r.blur;r.muh_on=r.muh_on||["tahajjud","gaze",...AV.map(h=>"av:"+h)];r.muh_custom=r.muh_custom||[];r.plan=r.plan||null;r.ram=!!r.ram;r.ram_s=r.ram_s||"";r.fast_done=r.fast_done||0;r.hifz=r.hifz||[];r.excOn=r.excOn||"";r.ms=r.ms||{};r.rem=Object.assign({on:false,win:true,start:false,jumuah:true,adhkar:true,refl:true,hifz:true,notif:false,checkin:true,ct:"21:00"},r.rem||{});r.rem.sent=r.rem.sent||{};Object.values(r.days).forEach(norm);return r}
 function norm(d){d.zikr=d.zikr||{};d.surahs=d.surahs||{};d.prayers=d.prayers||{};d.avoid_habits=d.avoid_habits||{};PR.forEach(p=>d.prayers[p]=d.prayers[p]||nl());AV.forEach(h=>d.avoid_habits[h]=d.avoid_habits[h]||nl());d.tahajjud=d.tahajjud||nl();d.lower_gaze=d.lower_gaze||nl();SU.forEach(s=>{if(d.surahs[s.e]===undefined)d.surahs[s.e]=false});d.quran_read=!!d.quran_read;d.quran_pages=d.quran_pages||0;return d}
 function rec(){if(!D.days[T]){D.days[T]=norm({});if(D.excOn)D.days[T].exc=D.excOn}if(FRI&&D.days[T].surahs[KAHF.e]===undefined)D.days[T].surahs[KAHF.e]=false;D.custom_surahs.forEach(n=>{if(D.days[T].surahs[SN[n-1]]===undefined)D.days[T].surahs[SN[n-1]]=false});const dy=D.days[T];if(!dy.on)dy.on=[...D.muh_on];dy.mx=dy.mx||{};dy.ad=dy.ad||{m:{},e:{}};dy.fast=dy.fast||nl();dy.tar=dy.tar||nl();dy.ref=dy.ref||{g:"",m:"",i:""};if(dy.exc&&D.ram&&dy.fast.status==="Not Logged")dy.fast.status=FA[1];cat().forEach(i=>{if(i.p.startsWith("mx.")&&D.muh_on.includes(i.id)&&!dy.mx[i.id])dy.mx[i.id]=nl()});return dy}
@@ -1828,11 +1839,131 @@ const a10=all;all=function(){a10();strip()};
 Object.assign(UR,{"Reflect":"غور و فکر","Progress":"پیش رفت","Simple":"سادہ","Everything":"سب کچھ","How much to show":"کتنا دکھانا ہے","Show everything":"سب کچھ دکھائیں"});
 window.applyAll=applyAll;applyAll();
 })();
+/* ===== v11: first-week guide, prayer-time note + mosque compare, welcome back, protected backup, safety copies ===== */
+(function(){
+const LS={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v);return true}catch(e){return false}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
+const dayDiff=(a,b)=>Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/864e5);
+const DRX=/^\d{4}-\d{2}-\d{2}$/;
+const nz=o=>Object.values((o||D).days).filter(d=>d&&typeof d==="object"&&!blankDay(d)).length;
+/* ---------- a small, keyboard-friendly dialog ---------- */
+function dlg(o){return new Promise(res=>{const old=$("#v11dlg");if(old)old.remove();const prev=document.activeElement;const d=document.createElement("div");d.id="v11dlg";d.className="dlg on v11";d.setAttribute("role","dialog");d.setAttribute("aria-modal","true");d.setAttribute("aria-labelledby","v11t");
+d.innerHTML=`<div class="box"><h3 id="v11t">${o.title}</h3><div class="v11b">${o.html||""}</div><div class="grp v11a">${o.btns.map((b,i)=>`<button class="btn${b.pri?" pri":""}" data-i="${i}">${b.t}</button>`).join("")}</div></div>`;document.body.appendChild(d);
+const kd=e=>{if(e.key==="Escape"){e.preventDefault();done(null)}};const done=v=>{d.remove();document.removeEventListener("keydown",kd,true);try{prev&&prev.focus&&prev.focus()}catch(e){}res(v)};document.addEventListener("keydown",kd,true);
+d.addEventListener("click",e=>{const b=e.target.closest("button[data-i]");if(b)done({id:o.btns[+b.dataset.i].id,vals:[...d.querySelectorAll("input")].map(x=>x.value)});else if(e.target===d)done(null)});
+d.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.tagName==="INPUT"){e.preventDefault();const p=d.querySelector("button.pri");p&&p.click()}});
+const f=d.querySelector("input")||d.querySelector("button.pri");f&&f.focus()})}
+/* ---------- 1. prayer times: method note and "compare with my mosque" ---------- */
+const MN={karachi:"Karachi (University of Islamic Sciences)",mwl:"Muslim World League",isna:"ISNA (North America)",uqu:"Umm al-Qura (Makkah)",egypt:"Egyptian General Authority",qatar:"Qatar",kuwait:"Kuwait",dubai:"UAE",singapore:"Singapore and Malaysia",turkey:"Turkey (Diyanet)"};
+const mins=h=>Math.round(((h%24)+24)%24*60);
+function mqCard(){let c=$("#mqCard");if(!c){const a=$("#adjRow");if(!a)return null;c=document.createElement("div");c.className="card";c.id="mqCard";a.closest(".card").after(c)}return c}
+function rMq(){const c=mqCard();if(!c)return;const o=D.loc,m=MT[o.m]?o.m:"karachi",[fa,ia]=MT[m];const ad=o.adj||{},ch=Object.keys(ad).filter(k=>ad[k]);
+const sel=c.querySelector("#mqP")?c.querySelector("#mqP").value:"Fajr",tv=c.querySelector("#mqT")?c.querySelector("#mqT").value:"";
+c.innerHTML=`<h3>About these prayer times</h3><p style="margin:.4rem 0"><b>Method:</b> ${MN[m]}. Fajr at ${fa}° and ${ia?"Isha at "+ia+"°":"Isha 90 minutes after Maghrib"} below the horizon. <b>Asr:</b> ${o.h?"Hanafi (shadow twice its length)":"Standard (shadow once its length)"}.${ch.length?` <b>Your changes:</b> ${ch.map(k=>k+" "+(ad[k]>0?"+":"")+ad[k]).join(", ")} min.`:""}</p><p class="mut" style="margin:.4rem 0 .9rem">These times are worked out from the sun’s position on your device, so they can differ from your mosque by a few minutes. Many mosques add a safety margin or follow their own timetable. If your mosque’s timetable is different, follow your mosque and match it here.</p>
+${hasLoc()?`<h4 style="margin:.2rem 0 .5rem">Compare with my mosque</h4><div class="grp"><select id="mqP" aria-label="Prayer to compare">${["Fajr","Sunrise","Dhuhr","Asr","Maghrib","Isha"].map(k=>`<option${k===sel?" selected":""}>${k}</option>`).join("")}</select><label class="mut" style="display:flex;gap:.4rem;align-items:center">Mosque time today <input type="time" id="mqT" value="${esc(tv)}" aria-label="Your mosque’s time for this prayer today"></label></div><div id="mqR" role="status" style="margin-top:.7rem"></div>`:`<p style="color:#b45309"><b>Set your location first</b> to compare times.</p>`}
+<details style="margin-top:.8rem"><summary class="mut">Which method should I choose?</summary><p class="mut" style="margin:.5rem 0">Use the method your local mosque or country follows. Commonly: Karachi in Pakistan, India and Bangladesh; Umm al-Qura in Saudi Arabia; Egyptian in much of Africa and the Middle East; ISNA or Muslim World League in North America and Europe; Diyanet in Turkey. If unsure, ask your mosque which one they use. The method is chosen in “Location and calculation settings” above.</p></details>`;mqRes()}
+function mqRes(){const r=$("#mqR");if(!r)return;const p=$("#mqP").value,v=$("#mqT").value;if(!/^\d{2}:\d{2}$/.test(v)){r.textContent="Enter the time your mosque shows for this prayer today, and this page tells you how far apart they are.";r.className="mut";return}
+const[hh,mm]=v.split(":").map(Number),h=pt(pd())[p];if(!isFinite(h)){r.textContent="This prayer time is not available for your location.";return}const app=mins(h);let d=hh*60+mm-app;if(d>720)d-=1440;if(d<-720)d+=1440;r.className="";
+if(d===0)r.innerHTML=`<b>Same as your mosque.</b> This page shows ${fmt(h)} for ${p}.`;
+else if(Math.abs(d)>60)r.innerHTML=`<b>That is more than an hour away from ${fmt(h)}.</b> Check AM or PM, and that your city and time zone are right, before changing anything.`;
+else{const n=Math.abs(d),cur=(D.loc.adj||{})[p]||0;r.innerHTML=`Your mosque is <b>${n} minute${n>1?"s":""} ${d>0?"later":"earlier"}</b> than this page (${fmt(h)}). <div class="grp" style="margin-top:.5rem"><button class="btn pri" data-mqapply="${d}">Match my mosque (${p} ${(cur+d)>0?"+":""}${cur+d} min)</button></div><span class="mut" style="font-size:.84rem;display:block;margin-top:.4rem">The difference can change through the year, so check again in a month.</span>`}}
+/* ---------- 2. welcome back after missed days ---------- */
+function lastActive(){let m="";for(const[k,d]of Object.entries(D.days)){if(!DRX.test(k)||k>=T||!d||typeof d!=="object")continue;if((!blankDay(d)||d.exc)&&k>m)m=k}return m}
+function rWb(){let c=$("#homeWb");if(!c){c=document.createElement("div");c.className="card";c.id="homeWb";c.style.order=0;const h=$("#p-home .hero");h?h.after(c):$("#p-home").prepend(c)}
+const la=lastActive(),td=D.days[T],today=td&&!blankDay(td);
+if(!la||dayDiff(la,T)<3||today||D.loc.wb===T){c.hidden=true;c.innerHTML="";return}
+c.hidden=false;c.innerHTML=`<div class="hd"><div><b>Welcome back</b><div class="mut" style="margin-top:.2rem">It is good to see you. There is nothing to catch up on, and your records are all still here. One small step today is enough.</div></div><div class="grp"><button class="btn pri" data-wbgo="salah">Log a prayer</button><button class="btn" data-wbgo="zikr">Count zikr</button><button class="btn" data-wbno="1">Not now</button></div></div>`}
+/* ---------- 3. first-week guide ---------- */
+const FW=[["Log a prayer","After you pray, tap its name on the Salah page. Starting with just Fajr is a good beginning.","salah","Open Salah"],["Check your prayer times","Make sure your city is set, then compare with your mosque. You can nudge any prayer by a few minutes.","salah","Check times"],["Count some zikr","Tap to count SubhanAllah, Alhamdulillah and Allahu Akbar. Even ten is a start.","zikr","Open Zikr"],["Mark your Quran","Note the pages you read today, or tick a surah. A few lines still count.","quran","Open Quran"],["Morning and evening adhkar","Short remembrances for the start and end of the day. Do one set today.","adhkar","Open Adhkar"],["Prayer reminders on your phone","Add prayer times to your phone calendar so it rings even when this page is closed.","notes","Set reminders"],["Keep your records safe","Your records live on this device. Download a backup file now and then, or sync with another device.","sync","Open backup"]];
+function fwInit(){if(D.loc.fw)return;D.loc.fw=nz()<=3?{s:T,off:false,hid:""}:{off:true};save()}
+function rFw(){let c=$("#homeFw");if(!c){c=document.createElement("div");c.className="card";c.id="homeFw";c.style.order=5;$("#p-home").appendChild(c)}
+const f=D.loc.fw;if(!f||f.off||f.hid===T||!f.s){c.hidden=true;c.innerHTML="";return}
+const n=Math.max(0,dayDiff(f.s,T));c.hidden=false;
+if(n>=7){c.innerHTML=`<div class="hd"><div><b>That was your first week</b><div class="mut" style="margin-top:.2rem">You have seen the main parts of the app. Search or the menu can open anything else, and these tips stay in Settings.</div></div><button class="btn pri" data-fw="off">Done</button></div>`;return}
+const t=FW[n];c.innerHTML=`<div class="mut" style="font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase">First week · day ${n+1} of 7</div><div style="margin:.3rem 0"><b>${t[0]}</b></div><p class="mut" style="margin:0 0 .7rem">${t[1]}</p><div class="grp"><button class="btn pri" data-fwgo="${t[2]}">${t[3]}</button><button class="btn" data-fw="done">Got it</button><button class="btn" data-fw="off">Hide the guide</button></div><details style="margin-top:.7rem"><summary class="mut">All seven tips</summary><ol style="padding-inline-start:1.2rem;margin:.5rem 0 0;display:grid;gap:.4rem">${FW.map((x,i)=>`<li><button class="btn" style="margin-inline-end:.4rem" data-fwgo="${x[2]}">${x[3]}</button><span${i===n?" style=\"font-weight:700\"":""}>${x[0]}</span></li>`).join("")}</ol></details>`}
+function rFwSet(){if(!$("#stBody"))return;let c=$("#fwCard");if(!c){c=document.createElement("div");c.className="card";c.id="fwCard";const m=$("#modeCard");if(m)m.after(c);else $("#stBody").before(c)}
+const f=D.loc.fw||{};c.innerHTML=`<h3>First-week guide</h3><p class="mut" style="margin:.3rem 0 .8rem">One short tip a day for seven days, on the Home page. ${f.off?"It is hidden now.":"It is showing."}</p><button class="btn" data-fw="${f.off?"on":"off"}">${f.off?"Show the guide again":"Hide the guide"}</button>`}
+/* ---------- 4. safety copies ---------- */
+async function gz(s){if(window.CompressionStream){try{const w=new CompressionStream("gzip"),wr=w.writable.getWriter();wr.write(new TextEncoder().encode(s));wr.close();return"G:"+b64(new Uint8Array(await new Response(w.readable).arrayBuffer()))}catch(e){}}return"R:"+s}
+async function ungz(s){if(s.startsWith("R:"))return s.slice(2);if(s.startsWith("G:")){const w=new DecompressionStream("gzip"),wr=w.writable.getWriter();wr.write(unb64(s.slice(2)));wr.close();return await new Response(w.readable).text()}throw new Error("format")}
+const SL=[["lgA","Automatic copy"],["lgB","Earlier automatic copy"],["rb","Kept before your last restore"]];
+const sk=s=>KEY+"_"+s,meta=s=>{try{return JSON.parse(LS.get(sk(s)+"m"))}catch(e){return null}};
+function putSlot(s,data,m){if(LS.set(sk(s),data)&&LS.set(sk(s)+"m",JSON.stringify(m)))return true;LS.del(sk(s));LS.del(sk(s)+"m");return false}
+function moveSlot(a,b){const d=LS.get(sk(a)),m=LS.get(sk(a)+"m");if(d==null||m==null)return false;return LS.set(sk(b),d)&&LS.set(sk(b)+"m",m)}
+let lgBusy=false;
+async function lgDaily(){if(lgBusy||window.__lf)return;if(LS.get(sk("lgi"))===T)return;const raw=LS.get(KEY);if(!raw)return;lgBusy=true;try{let p;try{p=JSON.parse(raw)}catch(e){return}if(!p||!p.days||typeof p.days!=="object")return;const n=nz(p);if(!n)return;const data=await gz(raw),cur=meta("lgA"),m={at:Date.now(),date:T,n};
+if(cur&&cur.n>=6&&n<cur.n*.5){putSlot("lgB",data,m)}else{if(cur)moveSlot("lgA","lgB");if(!putSlot("lgA",data,m)){LS.del(sk("lgB"));LS.del(sk("lgB")+"m");putSlot("lgA",data,m)}}
+LS.set(sk("lgi"),T)}finally{lgBusy=false}}
+async function readSlot(s){const d=LS.get(sk(s));if(d==null)return null;try{const p=JSON.parse(await ungz(d));return p&&p.days?p:null}catch(e){return null}}
+function summary(p){const ks=Object.keys(p.days).filter(k=>DRX.test(k)&&p.days[k]&&typeof p.days[k]==="object"&&!blankDay(p.days[k])).sort();return{n:ks.length,a:ks[0]||"",b:ks[ks.length-1]||""}}
+async function applyRestore(p,done){const old=D;try{const kept=await gz(JSON.stringify(D));if(!putSlot("rb",kept,{at:Date.now(),date:T,n:nz()})){toast("Not enough space to keep a safety copy, so nothing was changed. Download a backup first.",6000);return false}
+const nd=fix(JSON.parse(JSON.stringify(p)));D=nd;sigs={};SIGR=false;initSigs();if(!LS.set(KEY,JSON.stringify(D)))throw new Error("write");
+try{sessionStorage.setItem("v11msg",done||"Restored")}catch(e){}location.reload();return true}catch(e){D=old;try{sigs={};SIGR=false;initSigs()}catch(x){}toast("Could not restore. Your records were not changed.",5000);return false}}
+async function confirmRestore(p,src){const s=summary(p);if(p.app==="imaan-zikr"&&p.s&&!p.loc){await dlg({title:"This is a sync file",html:`<p class="mut">Sync files are merged, not restored. Open Sync and choose “Choose a file to merge”.</p>`,btns:[{id:"ok",t:"OK",pri:1}]});return}
+const cur=nz();const r=await dlg({title:"Restore this backup?",html:`<p style="margin:.2rem 0"><b>${esc(src)}</b></p><p class="mut" style="margin:.4rem 0">${s.n?`${s.n} day${s.n>1?"s":""} with records, from ${s.a} to ${s.b}.`:"This backup has no records in it."}</p><p class="mut" style="margin:.4rem 0">On this device now: ${cur} day${cur===1?"":"s"} with records.</p>${s.n<cur?`<p style="color:var(--bad);margin:.4rem 0" role="alert"><b>This backup has fewer days than you have now.</b></p>`:""}<p class="mut" style="margin:.4rem 0">Your current records will be replaced. A safety copy of them is kept on this device so you can undo this.</p>`,btns:[{id:"go",t:"Restore",pri:1},{id:"no",t:"Cancel"}]});
+if(r&&r.id==="go")await applyRestore(p,"Restored. A safety copy of your previous records was kept.")}
+/* ---------- 5. password-protected backup ---------- */
+const E=new TextEncoder();
+async function kdf(pw,salt,it){const k=await crypto.subtle.importKey("raw",E.encode(String(pw).normalize("NFKC")),"PBKDF2",false,["deriveKey"]);return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:it,hash:"SHA-256"},k,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
+async function encBackup(obj,pw){const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),it=250000,key=await kdf(pw,salt,it);const ct=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv},key,E.encode(JSON.stringify(obj))));return{app:"imaan-zikr",enc:1,kdf:"PBKDF2-SHA256",cipher:"AES-256-GCM",it,salt:b64(salt),iv:b64(iv),ct:b64(ct),at:Date.now()}}
+async function decBackup(o,pw){if(!o||o.enc!==1||!o.salt||!o.iv||!o.ct||!(o.it>=1e5&&o.it<=2e6))throw new Error("format");const key=await kdf(pw,unb64(o.salt),o.it);const pl=await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(o.iv)},key,unb64(o.ct));return JSON.parse(new TextDecoder().decode(pl))}
+window.encBackup=encBackup;window.decBackup=decBackup;
+async function openProtected(o,name){if(!(window.crypto&&crypto.subtle)){toast("This browser cannot open protected backups. Try Chrome, Edge or Safari.",5000);return null}let msg="";for(;;){const r=await dlg({title:"Password needed",html:`<p class="mut" style="margin:.2rem 0">${esc(name)} is password-protected.</p>${msg?`<p style="color:var(--bad);margin:.4rem 0" role="alert">${msg}</p>`:""}<input type="password" aria-label="Backup password" autocomplete="current-password" style="width:100%;margin-top:.5rem">`,btns:[{id:"ok",t:"Open",pri:1},{id:"no",t:"Cancel"}]});if(!r||r.id!=="ok")return null;try{return await decBackup(o,r.vals[0])}catch(e){msg="That password did not work. Check it, including capital letters, and try again."}}}
+async function fileFlow(f,mode){let text;try{text=await f.text()}catch(e){return toast("That file could not be read")}let p=null;try{p=JSON.parse(text)}catch(e){}
+if(mode==="merge"&&!(p&&p.enc===1)){try{syPreview(await syncDec(text),"File “"+esc(f.name)+"”")}catch(x){toast("That file could not be read")}return}
+if(!p||typeof p!=="object"||Array.isArray(p))return toast("That is not an Imaan backup file");
+if(p.enc===1){p=await openProtected(p,f.name);if(!p)return}
+if(mode==="merge"){if(!p.days||typeof p.days!=="object")return toast("That is not an Imaan backup file");return syPreview(p,"Protected file “"+esc(f.name)+"”")}
+if(!p.days||typeof p.days!=="object"||Array.isArray(p.days)){if(p.app==="imaan-zikr"&&p.s)return confirmRestore(p,f.name);return toast("That is not an Imaan backup file")}
+await confirmRestore(p,f.name)}
+document.addEventListener("change",e=>{const t=e.target;if(!t||t.type!=="file")return;const rs=t.id==="resFile"||t.hasAttribute("data-rs"),mg=t.id==="syFile";if(!rs&&!mg)return;
+e.stopImmediatePropagation();const f=t.files[0];t.value="";if(f)fileFlow(f,mg?"merge":"restore")},true);
+/* ---------- sync center cards ---------- */
+function rSyCards(){const el=$("#syBody");if(!el||!el.children[0])return;
+let c=$("#syPb");if(!c){c=document.createElement("div");c.className="card";c.id="syPb";(($("#syBk")||el.children[0])).after(c);c.innerHTML=`<h3>Password-protected backup</h3><p class="mut" style="margin:.3rem 0 .6rem">Locks the backup file with a password you choose, so only you can open it. Good for a file kept in email or on a shared drive.</p><p style="margin:.2rem 0 .7rem"><b>A forgotten password cannot be recovered.</b> Write it down somewhere safe.</p><div class="grp" style="display:grid;gap:.5rem"><input type="password" id="pbPw" autocomplete="new-password" placeholder="New password (8+ characters)" aria-label="New backup password"><input type="password" id="pbPw2" autocomplete="new-password" placeholder="Type it again" aria-label="Repeat the password"></div><div class="grp" style="margin-top:.7rem"><button class="btn pri" id="pbGo">Download protected backup</button></div><p class="mut" id="pbMsg" role="status" style="margin-top:.5rem;font-size:.86rem">To open it later, use Restore and choose the file. You will be asked for the password.</p>`}
+let s=$("#syLg");if(!s){s=document.createElement("div");s.className="card";s.id="syLg";c.after(s)}
+s.innerHTML=`<h3>Safety copies</h3><p class="mut" style="margin:.3rem 0 .6rem">This device keeps a few automatic copies of your records, so a mistake or a damaged save can be undone. They live in this browser, so they do not replace a backup file.</p><div id="lgList" class="mut">Looking…</div><label class="btn" style="margin-top:.8rem;display:inline-flex">Restore from a backup file<input type="file" data-rs accept=".json,.txt,application/json,text/plain" style="display:none"></label>`;
+lgList()}
+async function lgList(){const l=$("#lgList");if(!l)return;let h="";for(const[s,lab]of SL){const m=meta(s);if(!m||LS.get(sk(s))==null)continue;h+=`<div class="hd" style="padding:.45rem 0;border-top:1px solid var(--line)"><span><b style="color:var(--tx)">${lab}</b><br>${m.n} day${m.n===1?"":"s"} with records · taken ${esc(m.date||"")}</span><button class="btn" data-lgr="${s}">Restore</button></div>`}
+const bad=LS.get(KEY+"_bad");if(bad)h+=`<div class="hd" style="padding:.45rem 0;border-top:1px solid var(--line)"><span><b style="color:var(--tx)">Unreadable data found earlier</b><br>Kept so it can be rescued</span><button class="btn" data-lgbad="1">Download</button></div>`;
+if($("#lgList"))$("#lgList").innerHTML=h||`No copies yet. The first one is made the next time you open the app on a new day.`}
+/* ---------- unreadable saved data ---------- */
+function rLf(){let c=$("#homeLf");if(!window.__lf||window.__lfHide){if(c)c.hidden=true;return}
+if(!c){c=document.createElement("div");c.className="card";c.id="homeLf";c.style.order=0;c.setAttribute("role","alert");const h=$("#p-home .hero");h?h.before(c):$("#p-home").prepend(c)}
+c.hidden=false;c.innerHTML=`<b>We could not read your saved records</b><p class="mut" style="margin:.3rem 0 .7rem">Nothing has been deleted. A copy of the unreadable data is kept on this device. You can bring back your last good copy, or choose a backup file.</p><div class="grp"><button class="btn pri" data-lgr="auto">Restore last good copy</button><label class="btn">Choose a backup file<input type="file" data-rs accept=".json,.txt,application/json,text/plain" style="display:none"></label><button class="btn" data-lgfresh="1">Start fresh</button></div>`}
+/* ---------- events ---------- */
+document.addEventListener("click",async e=>{const t=e.target,g=s=>t.closest&&t.closest(s);let b;
+if(b=g("[data-fwgo]")){setTab(b.dataset.fwgo);return}
+if(b=g("[data-fw]")){const v=b.dataset.fw,f=D.loc.fw=D.loc.fw||{};if(v==="done")f.hid=T;else if(v==="off"){f.off=true;toast("Guide hidden. You can bring it back in Settings",3000)}else if(v==="on"){D.loc.fw={s:T,off:false,hid:""};toast("The guide will start again from day 1")}save();rFw();rFwSet();return}
+if(b=g("[data-wbgo]")){D.loc.wb=T;save();rWb();setTab(b.dataset.wbgo);return}
+if(g("[data-wbno]")){D.loc.wb=T;save();rWb();return}
+if(b=g("[data-mqapply]")){const p=$("#mqP").value,d=+b.dataset.mqapply;D.loc.adj={...(D.loc.adj||{}),[p]:((D.loc.adj||{})[p]||0)+d};save();rSalah();rNp();if(typeof rPT==="function")rPT();rMq();toast(p+" now matches your mosque");return}
+if(g("#pbGo")){const a=$("#pbPw").value,c=$("#pbPw2").value,m=$("#pbMsg");const bad=x=>{m.textContent=x;m.style.color="var(--bad)"};m.style.color="";
+if(!(window.crypto&&crypto.subtle))return bad("This browser cannot make protected backups. Try Chrome, Edge or Safari.");if(a.length<8)return bad("Use at least 8 characters.");if(a!==c)return bad("The two passwords are different.");
+const btn=g("#pbGo");btn.disabled=true;btn.textContent="Locking…";try{touchDays();const plain=JSON.parse(JSON.stringify(D)),o=await encBackup(plain,a),back=await decBackup(o,a);if(JSON.stringify(back)!==JSON.stringify(plain))throw new Error("verify");await dl(`Imaan_Backup_${T}_protected.json`,"application/json",JSON.stringify(o));D.loc.bk=T;save();rBk();$("#pbPw").value=$("#pbPw2").value="";m.textContent="Protected backup saved. Keep the password safe: it cannot be recovered.";m.style.color="var(--ok)"}catch(x){bad("Could not make the backup. Nothing was saved.")}btn.disabled=false;btn.textContent="Download protected backup";return}
+if(b=g("[data-lgr]")){let s=b.dataset.lgr;if(s==="auto"){for(const[k]of SL){if(k!=="rb"&&await readSlot(k)){s=k;break}}if(s==="auto")return toast("No safety copy was found. Choose a backup file instead.",4500)}
+const p=await readSlot(s);if(!p)return toast("That copy could not be opened");const m=meta(s)||{};await confirmRestore(p,(SL.find(x=>x[0]===s)||[0,"Safety copy"])[1]+(m.date?" from "+m.date:""));return}
+if(g("[data-lgbad]")){dl("Imaan_unreadable_data.txt","text/plain",LS.get(KEY+"_bad")||"");return}
+if(g("[data-lgfresh]")){window.__lfHide=1;rLf();if(!hasLoc()&&!D.loc.setup&&typeof wiz==="function")wiz(0);toast("Starting fresh. Your last good copy stays in Sync, under Safety copies",5000)}});
+/* ---------- hooks ---------- */
+const rl11=rLoc;rLoc=function(){rl11();rMq()};
+document.addEventListener("input",e=>{if(e.target.id==="mqT")mqRes()});document.addEventListener("change",e=>{if(e.target.id==="mqP")mqRes()});
+const rh11=rHome;rHome=function(){rh11.apply(this,arguments);rWb();rFw();rLf()};
+const rs11=rSync;rSync=function(){rs11();rSyCards()};
+const st11=setTab;setTab=function(t){st11(t);if(t==="settings")rFwSet();if(t==="salah")rMq();if(t==="sync")lgList()};
+const a11=all;all=function(){a11();lgDaily().catch(()=>{})};
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)lgDaily().catch(()=>{})});
+Object.assign(UR,{"First week":"پہلا ہفتہ","Welcome back":"خوش آمدید","Got it":"ٹھیک ہے","Hide the guide":"رہنما چھپائیں"});
+try{const m=sessionStorage.getItem("v11msg");if(m){sessionStorage.removeItem("v11msg");setTimeout(()=>toast(m,5000),600)}}catch(e){}
+fwInit();rWb();rFw();rLf();rMq();lgDaily().catch(()=>{});
+window.rFw=rFw;window.rWb=rWb;window.rMq=rMq;window.rLf=rLf;
+window.v11={dlg,applyRestore,readSlot,lgDaily,rWb,rFw,lastActive,fileFlow,gz,ungz};
+})();
 
 
 
 
-if(!hasLoc()&&!D.loc.setup)wiz(0);document.body.classList.toggle("bl",!!D.blur);rNp();setInterval(()=>{if(setToday()){dates();all()}rNp();remCheck()},3e4);lockNow();locInit();initSync();
+
+if(!hasLoc()&&!D.loc.setup&&!window.__lf)wiz(0);document.body.classList.toggle("bl",!!D.blur);rNp();setInterval(()=>{if(setToday()){dates();all()}rNp();remCheck()},3e4);lockNow();locInit();initSync();
 
 /* offline support and automatic updates (only on a web address) */
 if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){window.addEventListener("load",()=>{const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.register("sw.js").then(r=>{r.update&&r.update()}).catch(()=>{});navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)try{toast("A new version is ready. Refresh the page to use it.",5000)}catch(e){}})})}
