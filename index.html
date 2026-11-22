@@ -411,6 +411,15 @@ body.simple #p-home>.grid2,body.simple #catch{display:none!important}
 #syPb input[type=password]{width:100%}
 /* the older one-line welcome card is replaced by the new Welcome back card */
 #homeCb{display:none!important}
+
+/* ===== v12 ===== */
+.ltRow{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin-top:.7rem;padding-top:.6rem;border-top:1px solid var(--line);font-size:.92rem}
+.caps{font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.spl{display:grid;gap:.5rem}.spo{display:flex;flex-direction:column;align-items:flex-start;gap:.15rem;text-align:start;padding:.7rem .9rem;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--tx);cursor:pointer;font:inherit;min-height:48px;width:100%}.spo:hover,.spo:focus-visible{border-color:var(--ac)}
+#homeSp[hidden]{display:none!important}.hc-off{display:none!important}
+.hcl{list-style:none;margin:0;padding:0;display:grid;gap:.2rem}.hcl li{display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;padding:.4rem 0;border-top:1px solid var(--line)}.hcn{flex:1 1 100%}.hcb{display:flex;align-items:center;gap:.4rem}.hcb .btn{min-width:44px;min-height:44px;padding:0;justify-content:center}.hcb .btn:disabled{opacity:.35}.hcv{min-width:6.5rem;display:inline-flex;align-items:center;gap:.3rem}
+#homeCz{text-align:center;padding:.4rem 0}
+@media(min-width:700px){#p-home>#homeSp,#p-home>#homeCz{grid-column:1/-1}}
 #instHome{border-color:var(--pri,#1b7f85);background:linear-gradient(135deg,var(--card),var(--pill))}
 .instH{display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap}
 .instT{display:flex;flex-direction:column;gap:.15rem;min-width:0;flex:1 1 200px}
@@ -620,7 +629,7 @@ function setToday(){const s=iso(new Date());if(s===T)return false;T=s;TD=new Dat
 function load(){let raw=null;try{raw=localStorage.getItem(KEY)}catch(e){}try{const r=JSON.parse(raw);if(r&&r.days)return fix(r)}catch(e){}if(raw){window.__lf=1;try{localStorage.setItem(KEY+"_bad",raw)}catch(e){}}return fix({days:{}})}
 function fix(r){r.custom_zikr=r.custom_zikr||[...ZK];r.reflections=r.reflections||[...RF];r.qada_done=r.qada_done||0;r.custom_surahs=r.custom_surahs||[];r.fav_surahs=r.fav_surahs||[];r.fav_duas=r.fav_duas||[];r.loc=r.loc||{lat:31.5204,lng:74.3587,m:"karachi",h:true};r.pin=r.pin||null;r.blur=!!r.blur;r.muh_on=r.muh_on||["tahajjud","gaze",...AV.map(h=>"av:"+h)];r.muh_custom=r.muh_custom||[];r.plan=r.plan||null;r.ram=!!r.ram;r.ram_s=r.ram_s||"";r.fast_done=r.fast_done||0;r.hifz=r.hifz||[];r.excOn=r.excOn||"";r.ms=r.ms||{};r.rem=Object.assign({on:false,win:true,start:false,jumuah:true,adhkar:true,refl:true,hifz:true,notif:false,checkin:true,ct:"21:00"},r.rem||{});r.rem.sent=r.rem.sent||{};Object.values(r.days).forEach(norm);return r}
 function norm(d){d.zikr=d.zikr||{};d.surahs=d.surahs||{};d.prayers=d.prayers||{};d.avoid_habits=d.avoid_habits||{};PR.forEach(p=>d.prayers[p]=d.prayers[p]||nl());AV.forEach(h=>d.avoid_habits[h]=d.avoid_habits[h]||nl());d.tahajjud=d.tahajjud||nl();d.lower_gaze=d.lower_gaze||nl();SU.forEach(s=>{if(d.surahs[s.e]===undefined)d.surahs[s.e]=false});d.quran_read=!!d.quran_read;d.quran_pages=d.quran_pages||0;return d}
-function rec(){if(!D.days[T]){D.days[T]=norm({});if(D.excOn)D.days[T].exc=D.excOn}if(FRI&&D.days[T].surahs[KAHF.e]===undefined)D.days[T].surahs[KAHF.e]=false;D.custom_surahs.forEach(n=>{if(D.days[T].surahs[SN[n-1]]===undefined)D.days[T].surahs[SN[n-1]]=false});const dy=D.days[T];if(!dy.on)dy.on=[...D.muh_on];dy.mx=dy.mx||{};dy.ad=dy.ad||{m:{},e:{}};dy.fast=dy.fast||nl();dy.tar=dy.tar||nl();dy.ref=dy.ref||{g:"",m:"",i:""};if(dy.exc&&D.ram&&dy.fast.status==="Not Logged")dy.fast.status=FA[1];cat().forEach(i=>{if(i.p.startsWith("mx.")&&D.muh_on.includes(i.id)&&!dy.mx[i.id])dy.mx[i.id]=nl()});return dy}
+function rec(){if(!D.days[T]){D.days[T]=norm({});if(D.excOn)D.days[T].exc=D.excOn}if(FRI&&D.days[T].surahs[KAHF.e]===undefined)D.days[T].surahs[KAHF.e]=false;D.custom_surahs.forEach(n=>{if(D.days[T].surahs[SN[n-1]]===undefined)D.days[T].surahs[SN[n-1]]=false});const dy=D.days[T];if(!dy.on)dy.on=[...D.muh_on];dy.mx=dy.mx||{};dy.ad=dy.ad||{m:{},e:{}};dy.fast=dy.fast||nl();dy.tar=dy.tar||nl();dy.ref=dy.ref||{g:"",m:"",i:""};if(dy.exc&&dy.exc!=="l"&&D.ram&&dy.fast.status==="Not Logged")dy.fast.status=FA[1];cat().forEach(i=>{if(i.p.startsWith("mx.")&&D.muh_on.includes(i.id)&&!dy.mx[i.id])dy.mx[i.id]=nl()});return dy}
 function save(){try{D.loc.sv=Date.now();touchDays();localStorage.setItem(KEY,JSON.stringify(D))}catch(e){if(!save.w){save.w=1;toast("Could not save on this device. Please download a backup now",6000)}}stats()}
 function toast(m,ms){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),ms||2200)}
 const zsum=d=>Object.values(d.zikr||{}).reduce((a,b)=>a+b,0);
@@ -999,7 +1008,7 @@ $("#langBtn").onclick=()=>{D.lang=D.lang==="ur"?"en":"ur";save();applyLang();if(
 try{new MutationObserver(()=>{if(D.lang==="ur"){clearTimeout(trT);trT=setTimeout(trDom,40)}}).observe(document.body,{childList:true,characterData:true,subtree:true})}catch(e){}
 const IC={home:"M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z",moon:"M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z",book:"M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4zM8 4v16",beads:"M12 4.5a1.5 1.5 0 1 0 .01 0M6 11a1.5 1.5 0 1 0 .01 0M18 11a1.5 1.5 0 1 0 .01 0M8 18a1.5 1.5 0 1 0 .01 0M16 18a1.5 1.5 0 1 0 .01 0",grid:"M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z",sun:"M12 7a5 5 0 1 0 .01 0M12 1v3M12 20v3M1 12h3M20 12h3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1",mark:"M6 3h12v18l-6-4-6 4z",pen:"M4 20l4-1 11-11-3-3L5 16zM14 6l3 3",cal:"M4 6h16v14H4zM4 10h16M8 3v4M16 3v4",chart:"M4 20V10M10 20V4M16 20v-8M22 20H2",bell:"M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4",hist:"M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2",dua:"M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z"},ico=n=>`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${IC[n]}"/></svg>`;
 function rHome(){if(!$("#homePr"))return;const nxp=hasLoc()?nextP().p:"",r=rec(),t=pt(pd()),cs={"On Time":"#1f9d6b",Delayed:"#d98a0b",Missed:"#d9433f"},mrk={"On Time":"✓",Delayed:"!",Missed:"✕"};$("#greet").textContent="As-salamu alaykum";
-$("#homePr").innerHTML=`<div class="hd"><h3>Today’s prayers${r.exc?` <span class="mut" style="font-weight:500;font-size:.8rem">· Excused day</span>`:""}</h3><button class="btn" data-tab="salah">Open</button></div><div class="pr5">`+PR.map(p=>{const s=r.prayers[p].status;return `<button class="pc${p===nxp?" nx":""}" data-ql="${p}"><span class="pd${p===popP?" pop":""}" style="background:${cs[s]||"var(--pill)"};color:${cs[s]?"#fff":"var(--tx2)"}">${r.exc==="r"?"–":(mrk[s]||"")}</span><b>${p}</b><small>${fmt(t[p])}</small></button>`}).join("")+`</div>`+(D.loc.tip1?"":`<div class="tip"><span>Tip: tap a prayer to log it in two taps.</span><button class="btn" id="tip1">Got it</button></div>`);popP="";
+$("#homePr").innerHTML=`<div class="hd"><h3>Today’s prayers${r.exc?` <span class="mut" style="font-weight:500;font-size:.8rem">· ${r.exc==="l"?"Light day":"Excused day"}</span>`:""}</h3><button class="btn" data-tab="salah">Open</button></div><div class="pr5">`+PR.map(p=>{const s=r.prayers[p].status;return `<button class="pc${p===nxp?" nx":""}" data-ql="${p}"><span class="pd${p===popP?" pop":""}" style="background:${cs[s]||"var(--pill)"};color:${cs[s]?"#fff":"var(--tx2)"}">${r.exc==="r"?"–":(mrk[s]||"")}</span><b>${p}</b><small>${fmt(t[p])}</small></button>`}).join("")+`</div>`+(D.loc.tip1?"":`<div class="tip"><span>Tip: tap a prayer to log it in two taps.</span><button class="btn" id="tip1">Got it</button></div>`);popP="";
 const k=new Date().getHours()<15?"m":"e",ad=r.ad[k]||{},adn=AD[k].filter(i=>(ad[i.id]||0)>=i.n).length,hdue=D.hifz.filter(i=>i.st==="new"||(i.st==="rev"&&addD(i.last,HI[i.n])<=T)).length;
 const tl=[["zikr","Zikr",zsum(r)+" today","beads"],["adhkar","Adhkar",(k==="m"?"Morning ":"Evening ")+adn+"/"+AD[k].length,"sun"],["quran","Quran",(r.quran_pages||0)+" pages","book"],["hifz","Hifz",hdue+" due","mark"],["muh","Muhasabah","Reflect tonight","pen"],["fast","Fasting",r.fast&&r.fast.status!=="Not Logged"?r.fast.status:"Not logged","moon"]];
 $("#homeQa").innerHTML=tl.map(([t2,l,s,i])=>`<button class="qt" data-tab="${t2}">${ico(i)}<b>${l}</b><small>${esc(s)}</small></button>`).join("");
@@ -1012,8 +1021,8 @@ $("#more").onclick=e=>{if(e.target.id==="more")$("#more").classList.remove("on")
 document.addEventListener("keydown",e=>{if(e.key==="Escape")$("#more").classList.remove("on")});
 const setTab0=setTab;setTab=function(t){setTab0(t);if(t==="streaks")rMs();const mb=$("#moreBtn");if(mb)mb.classList.toggle("on",!["home","salah","quran","zikr"].includes(t));$("#more").classList.remove("on");if(window.scrollTo)window.scrollTo(0,0)};
 const EXC_CARD=`<h3>Excused day</h3><p class="mut" style="margin:.3rem 0 .7rem">Prayers are not counted today, and nothing is marked missed.</p><button class="btn" data-exc="">Remove excused day</button>`;
-function rExc(){const r=rec();$("#excCard").innerHTML=`<h3>Excused days</h3><p class="mut" style="margin:.3rem 0 .7rem">Private. On an excused day prayers are not counted as missed and your streaks continue. Missed fasts move to make-up.</p><select id="excSel" aria-label="Day type"><option value="">Normal day</option><option value="r">Excused from prayer and fasting</option><option value="i">Ill (fasting excused, prayers continue)</option><option value="t">Travelling (fasting excused)</option></select><label class="btn" style="margin-top:.7rem"><input type="checkbox" id="excOn" ${D.excOn?"checked":""}> Keep marking new days until I turn this off</label>`;$("#excSel").value=r.exc||""}
-document.addEventListener("change",e=>{const t=e.target;if(t.id==="excSel"){const v=t.value,r=rec();r.exc=v;if(!v)D.excOn="";else if($("#excOn")&&$("#excOn").checked)D.excOn=v;if(v&&D.ram&&r.fast.status==="Not Logged")r.fast.status=FA[1];save();all()}else if(t.id==="excOn"){const v=$("#excSel").value;if(t.checked&&!v){t.checked=false;return toast("Choose a day type first")}D.excOn=t.checked?v:"";save()}});
+function rExc(){const r=rec();$("#excCard").innerHTML=`<h3>Excused days</h3><p class="mut" style="margin:.3rem 0 .7rem">Private. On an excused day prayers are not counted as missed and your streaks wait instead of breaking. A light day is for busy or low-energy days: everything still counts if you do it. Missed fasts move to make-up.</p><select id="excSel" aria-label="Day type"><option value="">Normal day</option><option value="l">Light day (busy or low energy, do what you can)</option><option value="r">Excused from prayer and fasting</option><option value="i">Ill (fasting excused, prayers continue)</option><option value="t">Travelling (fasting excused)</option></select><label class="btn" style="margin-top:.7rem"><input type="checkbox" id="excOn" ${D.excOn?"checked":""}> Keep marking new days until I turn this off</label>`;$("#excSel").value=r.exc||""}
+document.addEventListener("change",e=>{const t=e.target;if(t.id==="excSel"){const v=t.value,r=rec();r.exc=v;if(!v)D.excOn="";else if($("#excOn")&&$("#excOn").checked)D.excOn=v;if(v&&v!=="l"&&D.ram&&r.fast.status==="Not Logged")r.fast.status=FA[1];save();all()}else if(t.id==="excOn"){const v=$("#excSel").value;if(t.checked&&!v){t.checked=false;return toast("Choose a day type first")}D.excOn=t.checked?v:"";save()}});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-exc]");if(b){rec().exc="";D.excOn="";save();all()}});
 function calEvents(){if(!hasLoc())return[];const n=+$("#icN").value||30,al=+$("#icA").value,sr=$("#icS").checked,ev=[],base=pd();for(let i=0;i<n;i++){const dd=new Date(base);dd.setDate(dd.getDate()+i);const t=pt(dd),tz=tzOff(dd);(sr?["Fajr","Sunrise","Dhuhr","Asr","Maghrib","Isha"]:PR).forEach(p=>{if(isFinite(t[p]))ev.push({p,y:dd.getFullYear(),m:dd.getMonth(),d:dd.getDate(),min:Math.round(t[p]*60),tz,al})})}return ev}
 const calWhere=()=>D.loc.src==="city"?`${D.loc.cn}, ${D.loc.cc}`:"your location";
@@ -1958,6 +1967,94 @@ fwInit();rWb();rFw();rLf();rMq();lgDaily().catch(()=>{});
 window.rFw=rFw;window.rWb=rWb;window.rMq=rMq;window.rLf=rLf;
 window.v11={dlg,applyRestore,readSlot,lgDaily,rWb,rFw,lastActive,fileFlow,gz,ungz};
 })();
+/* ===== v12 (Phase 2, batch a): starter plans, light day, customise Home ===== */
+(function(){
+const ids=a=>Array.isArray(a)?a:[];
+const dayDiff=(a,b)=>Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/864e5);
+const nz=()=>Object.values(D.days).filter(d=>d&&typeof d==="object"&&!blankDay(d)).length;
+/* ---------- 1. light day: a gentler excused-day type for busy days, caring for family, low energy ---------- */
+/* streaks wait instead of breaking on any excused day (prayer streaks only on rest days "r" and light days "l") */
+streak=function(fn,fri,kind){let n=0,c=new Date(TD);for(let i=0;i<365;i++){const k=iso(c);if(fri&&c.getDay()!==5){c.setDate(c.getDate()-1);continue}const d=D.days[k];
+if(d&&d.exc&&(kind==="fs"||(kind==="pr"&&d.exc==="r"))){c.setDate(c.getDate()-1);continue}
+if(d&&d.exc&&!fn(d)&&(kind!=="pr"||d.exc==="l")){c.setDate(c.getDate()-1);continue}
+if(d&&fn(d)){n++}else if(k!==T){break}c.setDate(c.getDate()-1)}return n};
+/* on a light day the score counts against half of the usual list */
+const sc12=score;score=function(d){const p=sc12(d);return d&&d.exc==="l"?Math.min(100,p*2):p};
+function ltRow(){const hp=$("#homePr"),r=rec();if(!hp||(r.exc&&r.exc!=="l"))return;const on=r.exc==="l";
+hp.insertAdjacentHTML("beforeend",on?`<div class="ltRow"><span><b>Light day.</b> Do what you can. Your streaks wait for you.</span><button class="btn" data-lt="0">Turn off</button></div>`:`<div class="ltRow"><span class="mut">Busy or low on energy?</span><button class="btn" data-lt="1">Make today a light day</button></div>`)}
+/* ---------- 2. starter plans: seven small steps, at your own pace ---------- */
+const pr=(r,p)=>{const s=r.prayers&&r.prayers[p]&&r.prayers[p].status;return s==="On Time"||s==="Delayed"};
+const nPr=r=>PR.filter(p=>pr(r,p)).length,nOn=r=>PR.filter(p=>r.prayers[p].status==="On Time").length,nLog=r=>PR.filter(p=>r.prayers[p].status!=="Not Logged").length;
+const SP={
+fajr:{n:"Fajr first",d:"A gentle start. One prayer, then a little more each day.",s:[
+["Pray Fajr today","Even a late Fajr counts. Showing up is the step.",r=>pr(r,"Fajr")],
+["Pray Fajr again","The second day is where the habit starts.",r=>pr(r,"Fajr")],
+["Fajr, then a little zikr","After Fajr, count ten zikr.",r=>pr(r,"Fajr")&&zsum(r)>=10],
+["Fajr and one more prayer","Add any one other prayer today.",r=>pr(r,"Fajr")&&nPr(r)>=2],
+["Fajr and two more","Three prayers today, whenever you manage them.",r=>pr(r,"Fajr")&&nPr(r)>=3],
+["Fajr and three more","Four prayers today. You are close to a full day.",r=>pr(r,"Fajr")&&nPr(r)>=4],
+["Fajr on time","Pray Fajr within its time today.",r=>r.prayers.Fajr.status==="On Time"]]},
+five:{n:"Five on time",d:"Build up to all five prayers within their time.",s:[
+["Log all five prayers","Just log honestly today, on time or not. No pressure.",r=>nLog(r)>=5],
+["Two on time","Aim for two prayers within their time.",r=>nOn(r)>=2],
+["Three on time","Three within their time today.",r=>nOn(r)>=3],
+["Three on time again","Repeat it. Repeating is how habits form.",r=>nOn(r)>=3],
+["Four on time","Four within their time today.",r=>nOn(r)>=4],
+["Four on time again","Hold it steady.",r=>nOn(r)>=4],
+["All five on time","Every prayer within its time. Take it a day at a time.",r=>nOn(r)>=5]]},
+quran:{n:"Quran 10 minutes",d:"Ten unhurried minutes with the Quran, most days.",s:[
+["Read one page","Read one page today, slowly.",r=>(r.quran_pages||0)>=1||!!r.quran_read],
+["Read one page again","Same page count. Make it easy.",r=>(r.quran_pages||0)>=1||!!r.quran_read],
+["Read two pages","About ten minutes for most readers.",r=>(r.quran_pages||0)>=2],
+["Two pages again","Pick a time that suits you and keep to it.",r=>(r.quran_pages||0)>=2],
+["Two pages again","Same time, same place if you can.",r=>(r.quran_pages||0)>=2],
+["Two pages again","Nearly there.",r=>(r.quran_pages||0)>=2],
+["Two pages, then plan ahead","Read two pages, then choose what you want to read next.",r=>(r.quran_pages||0)>=2]]}};
+const SPK=Object.keys(SP);
+const sp=()=>D.loc.sp&&SP[D.loc.sp.id]?D.loc.sp:null;
+function spCheck(){const p=sp();if(!p)return;p.d=ids(p.d);if(p.d.length>=7||p.d.includes(T))return;const r=rec();if(r.exc==="r")return;
+if(SP[p.id].s[p.d.length][2](r)){p.d.push(T);D.loc.sp=p;if(p.d.length>=7){D.loc.spd=[...new Set([...ids(D.loc.spd),p.id])]}save();toast(p.d.length>=7?"You finished “"+SP[p.id].n+"”. Well done":"Step "+p.d.length+" done. Next step tomorrow",3500)}}
+const dots=n=>`<span class="dots" aria-hidden="true">${[0,1,2,3,4,5,6].map(i=>`<i class="${i<n?"on":""}"></i>`).join("")}</span>`;
+const chooser=(cur)=>SPK.filter(k=>k!==cur).map(k=>`<button class="spo" data-spstart="${k}"><b>${SP[k].n}</b><span class="mut">${SP[k].d}</span></button>`).join("");
+function rSp(){let c=$("#homeSp");if(!c){c=document.createElement("div");c.className="card";c.id="homeSp";c.style.order=5;$("#p-home").appendChild(c)}
+const p=sp(),f=D.loc.fw||{};let h="";
+if(p){const n=ids(p.d).length,P=SP[p.id],done=n>=7;
+ if(done)h=`<div class="mut caps">${P.n} · finished</div><b>You finished your 7-day path</b><p class="mut" style="margin:.3rem 0 .7rem">Seven steps, one at a time. Keep what worked. If you like, try another path.</p><div class="spl">${chooser(p.id)}</div><div class="grp" style="margin-top:.6rem"><button class="btn" data-spstop="1">Done</button></div>`;
+ else{const st=P.s[n],today=p.d.includes(T),ex=rec().exc==="r";h=`<div class="hd"><div class="mut caps">${P.n} · step ${n+(today?0:1)} of 7</div>${dots(n)}</div><div style="margin:.3rem 0"><b>${today?"Done for today":ex?"Resting today":st[0]}</b></div><p class="mut" style="margin:0 0 .6rem">${today?"Your next step is tomorrow. Nothing more is needed today.":ex?"Today is an excused day. The path waits for you.":st[1]}</p>${today||ex?"":`<div class="grp"><button class="btn" data-spdone="1">I did this</button><button class="btn" data-spstop="1">Stop this path</button></div>`}`}}
+else if(!D.loc.spx&&nz()<=21&&(f.off||(f.s&&dayDiff(f.s,T)>=1)))h=`<b>Start a 7-day path</b><p class="mut" style="margin:.3rem 0 .7rem">One small step a day, at your own pace. If you miss a day, the path simply waits for you.</p><div class="spl">${chooser("")}</div><div class="grp" style="margin-top:.6rem"><button class="btn" data-spno="1">Not now</button></div>`;
+c.hidden=!h;c.innerHTML=h}
+function rSpSet(){const st=$("#fwCard")||$("#modeCard");if(!$("#stBody"))return;let c=$("#spCard");if(!c){c=document.createElement("div");c.className="card";c.id="spCard";if(st)st.after(c);else $("#stBody").before(c)}
+const p=sp(),n=p?ids(p.d).length:0;c.innerHTML=`<h3>Starter paths</h3><p class="mut" style="margin:.3rem 0 .8rem">Seven small steps, one a day, at your own pace. ${p?`<b>${SP[p.id].n}</b>: ${n>=7?"finished":"step "+(n+1)+" of 7"}.`:"No path is running."}</p><div class="spl">${SPK.map(k=>`<button class="spo" data-spstart="${k}"><b>${SP[k].n}${ids(D.loc.spd).includes(k)?" ✓":""}</b><span class="mut">${SP[k].d}</span></button>`).join("")}</div>${p?`<div class="grp" style="margin-top:.7rem"><button class="btn" data-spstop="1">Stop the current path</button></div>`:""}`}
+/* ---------- 3. customise Home: reorder and hide cards (per device) ---------- */
+const HC=[["np","#np","Next prayer",0],["homeStats","#homeStats","Today at a glance",1],["homePr","#homePr","Today’s prayers",0],["homeQk","#homeQk","Quick log",1],["grid2","#p-home>.grid2","Completion and zikr total",1],["homeMs","#homeMs","Today’s missions",1],["homeGoals","#homeGoals","Daily goals",1],["homeLv","#homeLv","Level",1],["homeQa","#homeQa","Zikr shortcuts",1],["homeMood","#homeMood","Heart check-in",1],["homeHeart","#homeHeart","Today’s heart",1],["homeAyah","#homeAyah","Ayah of the day",1],["homeDeed","#homeDeed","Today’s small deed",1],["homeSt","#homeSt","Streaks",1],["homeDua","#homeDua","Dua of the day",1],["rem","#p-home>.rem","Reminder of the day",1],["homeNm","#homeNm","Name of Allah",1],["homeAll","#homeAll","Everything in one place",1]];
+const FULLONLY=["grid2","homeMs","homeGoals","homeLv","homeQa","homeMood","homeHeart","homeAyah","homeDeed","homeSt","homeDua","homeNm","homeAll"];
+const hcs=()=>{const o=D.loc.hc;return o&&typeof o==="object"?{o:ids(o.o),h:ids(o.h)}:{o:[],h:[]}};
+function hcOrder(){const k=HC.map(x=>x[0]),o=hcs().o.filter(x=>k.includes(x));return[...o,...k.filter(x=>!o.includes(x))]}
+function applyHc(){const s=hcs(),on=!!(D.loc.hc&&(s.o.length||s.h.length)),ord=hcOrder();
+HC.forEach(([id,sel])=>{const el=$(sel);if(!el)return;if(el.dataset.o0===undefined)el.dataset.o0=el.style.order||"";el.style.order=on?String(6+ord.indexOf(id)):el.dataset.o0;el.classList.toggle("hc-off",on&&s.h.includes(id)&&HC.find(x=>x[0]===id)[3]===1)});
+const bk=$("#homeBk");if(bk){if(bk.dataset.o0===undefined)bk.dataset.o0=bk.style.order||"";bk.style.order=on?"90":bk.dataset.o0}}
+function rHcSet(){if(!$("#stBody"))return;let c=$("#hcCard");if(!c){c=document.createElement("div");c.className="card";c.id="hcCard";const a=$("#spCard")||$("#fwCard")||$("#modeCard");if(a)a.after(c);else $("#stBody").before(c)}
+const s=hcs(),ord=hcOrder(),sim=document.body.classList.contains("simple");
+c.innerHTML=`<h3>Customize Home</h3><p class="mut" style="margin:.3rem 0 .7rem">Move cards up or down, or hide the ones you do not need. This is only for this device.${sim?" Cards marked “full view” show when you choose Show everything.":""}</p><ul class="hcl">${ord.map((id,i)=>{const [,,lb,hid]=HC.find(x=>x[0]===id);return`<li><span class="hcn">${lb}${sim&&FULLONLY.includes(id)?` <small class="mut">(full view)</small>`:""}</span><span class="hcb"><button class="btn" data-hcm="${id}:-1" aria-label="Move ${lb} up"${i===0?" disabled":""}>↑</button><button class="btn" data-hcm="${id}:1" aria-label="Move ${lb} down"${i===ord.length-1?" disabled":""}>↓</button>${hid?`<label class="hcv"><input type="checkbox" data-hch="${id}" ${s.h.includes(id)?"":"checked"} aria-label="Show ${lb}"> Show</label>`:`<span class="mut hcv">Always shown</span>`}</span></li>`}).join("")}</ul><div class="grp" style="margin-top:.7rem"><button class="btn" data-hcreset="1">Reset to default</button></div>`}
+/* ---------- events ---------- */
+document.addEventListener("click",e=>{const t=e.target,g=s=>t.closest&&t.closest(s);let b;
+if(b=g("[data-lt]")){const r=rec(),on=b.dataset.lt==="1";r.exc=on?"l":"";if(!on&&D.excOn==="l")D.excOn="";save();all();toast(on?"Light day on. Do what you can":"Light day off");return}
+if(b=g("[data-spstart]")){D.loc.sp={id:b.dataset.spstart,s:T,d:[]};D.loc.spx=true;save();spCheck();rSp();rSpSet();toast("Path started: "+SP[b.dataset.spstart].n);return}
+if(g("[data-spstop]")){D.loc.sp=null;D.loc.spx=true;save();rSp();rSpSet();toast("Path stopped. You can start another in Settings");return}
+if(g("[data-spno]")){D.loc.spx=true;save();rSp();toast("You can start a path any time in Settings");return}
+if(g("[data-spdone]")){const p=sp();if(p&&!p.d.includes(T)&&p.d.length<7){p.d.push(T);if(p.d.length>=7)D.loc.spd=[...new Set([...ids(D.loc.spd),p.id])];save();rSp();toast(p.d.length>=7?"You finished “"+SP[p.id].n+"”":"Step "+p.d.length+" done. Next step tomorrow")}return}
+if(b=g("[data-hcm]")){const[id,d]=b.dataset.hcm.split(":"),o=hcOrder(),i=o.indexOf(id),j=i+ +d;if(j<0||j>=o.length)return;[o[i],o[j]]=[o[j],o[i]];const s=hcs();D.loc.hc={o,h:s.h};save();applyHc();rHcSet();const f=$(`#hcCard [data-hcm="${id}:${d}"]:not(:disabled)`)||$(`#hcCard [data-hcm="${id}:${-d}"]`);f&&f.focus();return}
+if(g("[data-hcreset]")){D.loc.hc=null;save();applyHc();rHcSet();toast("Home is back to the default");return}
+if(g("[data-hcgo]")){setTab("settings");setTimeout(()=>{rHcSet();const c=$("#hcCard");c&&c.scrollIntoView({block:"start"})},150);return}});
+document.addEventListener("change",e=>{const t=e.target;if(t.dataset&&t.dataset.hch){const s=hcs(),h=t.checked?s.h.filter(x=>x!==t.dataset.hch):[...new Set([...s.h,t.dataset.hch])];D.loc.hc={o:hcOrder(),h};save();applyHc()}});
+/* ---------- hooks ---------- */
+const rh12=rHome;rHome=function(){spCheck();rh12.apply(this,arguments);ltRow();rSp();applyHc();czRow()};
+function czRow(){let c=$("#homeCz");if(!c){c=document.createElement("div");c.id="homeCz";c.style.order=310;c.innerHTML=`<button class="btn" data-hcgo="1">Customize Home</button>`;$("#p-home").appendChild(c)}}
+const st12=setTab;setTab=function(t){st12(t);if(t==="settings"){rSpSet();rHcSet()}};
+window.rSp=rSp;window.spCheck=spCheck;window.v12={SP,HC,spCheck,rSp,applyHc,hcOrder};
+rHome();
+})();
+
 
 
 
