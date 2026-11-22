@@ -389,6 +389,27 @@ h1,h2,h3{letter-spacing:-.012em}
 #homeNm .hd{align-items:center}
 @media(min-width:1100px){#p-zakat.on,#p-events.on{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;align-items:start}#p-zakat.on>*,#p-events.on>*{margin:0!important}#p-zakat.on>:first-child,#p-zakat.on>#zkRes{grid-column:auto}}
 #nmQ{width:100%}
+/* ===== v10 ===== */
+#segBar{display:flex;gap:.4rem;overflow-x:auto;padding:.5rem 0 .2rem;scrollbar-width:none}#segBar[hidden]{display:none}#segBar::-webkit-scrollbar{display:none}
+#segBar button{flex:none;min-height:40px;padding:0 1rem;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--tx2);font-weight:600;font-size:.9rem;cursor:pointer;transition:background-color .15s,color .15s,border-color .15s}
+#segBar button.on{background:var(--ac);border-color:var(--ac);color:#fff}#segBar button:not(.on):hover{border-color:var(--ac);color:var(--tx)}
+#homeMode{display:none}
+body.simple #homeMode{display:block}
+body.simple #homeMs,body.simple #homeGoals,body.simple #homeMood,body.simple #homeAyah,body.simple #homeLv,body.simple #homeIn,body.simple #homeHeart,body.simple #homeQa,body.simple #homeSt,body.simple #homeDeed,body.simple #homeDua,body.simple #grid2,body.simple #homeNm,body.simple #homeAll{display:none!important}
+body.nogm #homeLv,body.nogm #homeMs,body.nogm #homeSt{display:none!important}
+@media(min-width:700px){#p-home>#homeMode{grid-column:1/-1}}
+body.simple #p-home>.grid2,body.simple #catch{display:none!important}
+#adCard svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#instHome{border-color:var(--pri,#1b7f85);background:linear-gradient(135deg,var(--card),var(--pill))}
+.instH{display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap}
+.instT{display:flex;flex-direction:column;gap:.15rem;min-width:0;flex:1 1 200px}
+.instT h3{margin:0}
+.instB{display:flex;gap:.5rem;flex-wrap:wrap}
+#instMore{margin-top:.8rem}
+.instSt{margin:.2rem 0 .4rem;padding-left:1.3rem;display:flex;flex-direction:column;gap:.4rem;line-height:1.5}
+.instNote{margin:.4rem 0 0;font-size:.88em}
+#instHome{order:-1}
+#instHome{grid-column:1/-1;align-self:start}
 </style>
 </head>
 <body>
@@ -1754,6 +1775,60 @@ Object.assign(UR,{"Qibla":"قبلہ","99 Names":"اسماءُ الحسنیٰ","Z
 window.playAdhan=playAdhan;window.idbGet=idbGet;window.shareCard=shareCard;
 setTab(tab);
 })();
+/* ===== v10: simple view, merged sections, quiet mode switch, calendar reminders ===== */
+(function(){
+const SEG={muh:["muh","journal","habits"],insights:["insights","streaks","year","history"],notes:["notes","alerts"],cal:["cal","events"]};
+const SL={muh:"Muhasabah",journal:"Journal",habits:"Habits",insights:"Insights",streaks:"Streaks",year:"Year view",history:"History",notes:"Reminders",alerts:"Alerts",cal:"Calendar",events:"Islamic dates"};
+const GT={muh:"Reflect",journal:"Reflect",habits:"Reflect",insights:"Progress",streaks:"Progress",year:"Progress",history:"Progress",notes:"Reminders",alerts:"Reminders",cal:"Calendar",events:"Calendar"};
+const PRI={};Object.entries(SEG).forEach(([p,l])=>l.forEach(t=>PRI[t]=p));
+const ALLF=FL6.map(x=>({...x})),byT=Object.fromEntries(ALLF.map(x=>[x.t,x])),NAMEO={muh:"Reflect",insights:"Progress"};
+const FULL=[["Today",["home","salah","adhkar","zikr","quran"]],["Worship",["duas","fast","qibla","names","hifz","cal","zakat"]],["Grow",["muh","insights"]],["Tools",["notes","sync","settings"]]];
+const SIMPLE=[["Today",["home","salah","adhkar","zikr","quran"]],["Grow",["insights"]],["Tools",["settings"]]];
+const ent=t=>{const x=byT[t];return[t,NAMEO[t]||x.l,x.i,x.k]};
+const gm=()=>D.ui.gm!==false,simple=()=>D.ui.mode==="simple";
+/* first run after this update: new users get the simple view, people who already log keep everything */
+if(!D.ui.mode){const used=Object.values(D.days).filter(d=>!blankDay(d)).length;D.ui.mode=used>3?"full":"simple";save()}
+function applyNav(){GR6.length=0;(simple()?SIMPLE:FULL).forEach(([g,l])=>GR6.push([g,l.map(ent)]));FL6.length=0;ALLF.forEach(x=>FL6.push(x));
+$("#side .sl").innerHTML=GR6.map(g=>`<div class="sgr">${g[0]}</div>`+g[1].map(x=>`<button class="sn" data-tab="${x[0]}" data-g="${g[0]}">${ico(x[2])}<span>${x[1]}</span></button>`).join("")).join("");
+$("#jump").innerHTML=GR6.flatMap(g=>g[1].map(x=>({x,g:g[0]}))).filter(o=>o.x[0]!=="home").map(({x,g})=>`<button class="jc" data-tab="${x[0]}" data-g="${g}">${ico(x[2])}<span>${x[1]}</span></button>`).join("");
+$("#homeAll").innerHTML=`<h3>Everything in one place</h3>`+GR6.slice(1).map(g=>`<div class="fgl">${g[0]}</div><div class="fg">${g[1].map(x=>`<button class="ft" data-tab="${x[0]}" data-g="${g[0]}">${ico(x[2])}<span>${x[1]}</span></button>`).join("")}</div>`).join("")}
+/* one bar to move between related pages */
+const sb=document.createElement("div");sb.id="segBar";sb.hidden=true;$("#ph").after(sb);
+function segBar(t){const p=PRI[t];if(!p){sb.hidden=true;return}sb.hidden=false;sb.innerHTML=SEG[p].filter(x=>!(x==="streaks"&&!gm())).map(x=>`<button class="${x===t?"on":""}" data-tab="${x}">${SL[x]}</button>`).join("")}
+/* home cards that only make sense in the full view, and the quiet switch */
+const hm=document.createElement("div");hm.className="card";hm.id="homeMode";hm.style.order=300;hm.innerHTML=`<div class="hd"><div><b>You are using the simple view</b><div class="mut" style="font-size:.88rem">Prayers, adhkar, zikr, Quran and progress. Search or the menu can open anything else.</div></div><button class="btn pri" data-mode="full">Show everything</button></div>`;$("#p-home").appendChild(hm);
+function strip(){document.querySelectorAll("#homeStats>div").forEach(d=>{const s=(d.querySelector("span")||{}).textContent||"";if(/streak|^level/i.test(s))d.style.display=gm()?"":"none"});const g=document.querySelectorAll("#homeStats>div");let n=0;g.forEach(d=>{if(d.style.display!=="none")n++});$("#homeStats").style.gridTemplateColumns=`repeat(${n||1},1fr)`}
+function rModeCard(){let c=$("#modeCard");if(!c){c=document.createElement("div");c.className="card";c.id="modeCard";$("#stBody").before(c)}
+c.innerHTML=`<h3>How much to show</h3><p class="mut" style="margin:.3rem 0 .8rem">Simple shows prayers, adhkar, zikr, Quran and progress. Everything adds worship tools, reflection, Zakat and more. Search can open any feature in either view.</p><div class="grp"><button class="btn${simple()?" pri":""}" data-mode="simple">Simple</button><button class="btn${simple()?"":" pri"}" data-mode="full">Everything</button></div><label class="chk" style="display:flex;gap:.6rem;align-items:center;margin-top:.9rem"><input type="checkbox" id="gmTog"${gm()?" checked":""}> Show levels, XP, badges and streaks</label><p class="mut" style="font-size:.84rem;margin-top:.3rem">Turn this off for a quieter app with no points or celebrations. Your records are kept either way.</p>`}
+function applyAll(){document.body.classList.toggle("simple",simple());document.body.classList.toggle("nogm",!gm());applyNav();strip();segBar(typeof tab!=="undefined"?tab:"home");if(typeof tab!=="undefined")setTab(tab);if($("#p-settings").classList.contains("on"))rModeCard()}
+/* no celebrations or pop-ups while the quiet switch is off */
+const cel=celebrate;celebrate=function(n){if(gm())cel(n)};const gs=gShow;gShow=function(){if(gm())gs.apply(null,arguments)};const ms=msShow;msShow=function(){if(gm())ms.apply(null,arguments)};
+/* ---------- calendar reminders (.ics) ---------- */
+function rCal(){let c=$("#calRemCard");if(!c){c=document.createElement("div");c.className="card";c.id="calRemCard";$("#p-notes").appendChild(c)}
+const o=D.ui.calx=D.ui.calx||{days:7,p:["Fajr","Dhuhr","Asr","Maghrib","Isha"],b:0};const P=["Fajr","Sunrise","Dhuhr","Asr","Maghrib","Isha"];
+c.innerHTML=`<h3>Prayer reminders on your phone calendar</h3><p class="mut" style="margin:.3rem 0 .7rem">Your calendar app can ring at each prayer time even when this page is closed. Download the file, open it on your phone and add it to your calendar. Reminders cover the days you choose, so repeat this when they run out.</p>${hasLoc()?"":`<p style="color:#b45309;margin-bottom:.6rem"><b>Set your location first</b> so the times are correct (Settings).</p>`}<div class="grp">${P.map(x=>`<button class="btn${o.p.includes(x)?" pri":""}" data-calp="${x}">${x}</button>`).join("")}</div><div class="grp" style="margin-top:.7rem;align-items:center"><label class="mut">Days <select id="calDays">${[7,14,30].map(n=>`<option value="${n}"${o.days===n?" selected":""}>${n}</option>`).join("")}</select></label><label class="mut">Also remind <select id="calB">${[[0,"No extra reminder"],[5,"5 minutes before"],[10,"10 minutes before"],[15,"15 minutes before"]].map(([n,l])=>`<option value="${n}"${o.b===n?" selected":""}>${l}</option>`).join("")}</select></label></div><div class="grp" style="margin-top:.8rem"><button class="btn pri" id="calGo">Download calendar file</button></div><p class="mut" style="margin-top:.6rem;font-size:.84rem">Android: open the file with Google Calendar. iPhone: tap the file, then Add All. Times are saved exactly as shown in this app.</p>`}
+const z2=n=>String(n).padStart(2,"0"),utc=d=>`${d.getUTCFullYear()}${z2(d.getUTCMonth()+1)}${z2(d.getUTCDate())}T${z2(d.getUTCHours())}${z2(d.getUTCMinutes())}00Z`;
+function icsBuild(){const o=D.ui.calx,L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Imaan Zikr Tracker//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH","X-WR-CALNAME:Imaan prayer times"],now=utc(new Date()),base=new Date(T+"T00:00:00");let n=0;
+for(let i=0;i<o.days;i++){const dt=new Date(base);dt.setDate(base.getDate()+i);const t=pt(dt),tz=tzOff(dt);o.p.forEach(p=>{const h=t[p];if(!isFinite(h))return;const st=new Date(Date.UTC(dt.getFullYear(),dt.getMonth(),dt.getDate())+(h-tz)*36e5);if(st<new Date())return;const en=new Date(+st+10*6e4);n++;
+L.push("BEGIN:VEVENT",`UID:${iso(dt)}-${p}@imaan-zikr`,`DTSTAMP:${now}`,`DTSTART:${utc(st)}`,`DTEND:${utc(en)}`,`SUMMARY:${p==="Sunrise"?"Sunrise (Fajr time has ended)":p+" prayer time"}`,`DESCRIPTION:${p==="Sunrise"?"The sun is rising.":"It is time for "+p+". May Allah accept your prayer."}`,"BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+p,"TRIGGER:PT0S","END:VALARM");
+if(o.b)L.push("BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+p+" in "+o.b+" minutes","TRIGGER:-PT"+o.b+"M","END:VALARM");L.push("END:VEVENT")})}
+const last=new Date(base);last.setDate(base.getDate()+o.days);const ls=new Date(Date.UTC(last.getFullYear(),last.getMonth(),last.getDate(),4,0));L.push("BEGIN:VEVENT",`UID:refresh-${iso(last)}@imaan-zikr`,`DTSTAMP:${now}`,`DTSTART:${utc(ls)}`,`DTEND:${utc(new Date(+ls+36e5))}`,"SUMMARY:Refresh your prayer reminders","DESCRIPTION:Open the Imaan tracker, go to Reminders and download a new calendar file.","END:VEVENT","END:VCALENDAR");return{text:L.join("\r\n")+"\r\n",n}}
+window.icsBuild=icsBuild;
+/* ---------- events ---------- */
+document.addEventListener("click",e=>{const t=e.target,g=s=>t.closest&&t.closest(s);let b;
+if(b=g("[data-mode]")){const m=b.dataset.mode;if(D.ui.mode===m)return;D.ui.mode=m;save();$("#lnch").classList.remove("on");applyAll();toast(m==="simple"?"Simple view on":"Showing everything");return}
+if(b=g("[data-calp]")){const o=D.ui.calx,x=b.dataset.calp,i=o.p.indexOf(x);if(i<0)o.p.push(x);else if(o.p.length>1)o.p.splice(i,1);save();rCal();return}
+if(g("#calGo")){if(!hasLoc())return toast("Set your location first in Settings");const r=icsBuild();if(!r.n)return toast("Nothing to add yet. Check the prayers selected");dl("imaan-prayer-times.ics","text/calendar",r.text);toast(`Calendar file saved with ${r.n} reminders`,3500)}});
+document.addEventListener("change",e=>{const t=e.target;if(t.id==="gmTog"){D.ui.gm=t.checked;save();applyAll();toast(t.checked?"Levels and badges are on":"Levels and badges are hidden");return}
+if(t.id==="calDays"){D.ui.calx.days=+t.value;save();return}if(t.id==="calB"){D.ui.calx.b=+t.value;save()}});
+/* ---------- hooks ---------- */
+const rl=renderL;renderL=function(q){rl(q);if(simple()&&!String(q||"").trim())$("#lc").insertAdjacentHTML("beforeend",`<div class="fgl">More</div><button class="btn" data-mode="full">Show all features</button>`)};
+const st10=setTab;setTab=function(t){st10(t);const p=PRI[t]||t;document.querySelectorAll("#side .sn").forEach(b=>b.classList.toggle("on",b.dataset.tab===p));$("#phT").textContent=GT[t]||LB6[t]||t;segBar(t);strip();if(t==="settings")rModeCard();if(t==="notes")rCal()};
+const a10=all;all=function(){a10();strip()};
+Object.assign(UR,{"Reflect":"غور و فکر","Progress":"پیش رفت","Simple":"سادہ","Everything":"سب کچھ","How much to show":"کتنا دکھانا ہے","Show everything":"سب کچھ دکھائیں"});
+window.applyAll=applyAll;applyAll();
+})();
+
 
 
 
@@ -1761,6 +1836,67 @@ if(!hasLoc()&&!D.loc.setup)wiz(0);document.body.classList.toggle("bl",!!D.blur);
 
 /* offline support and automatic updates (only on a web address) */
 if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){window.addEventListener("load",()=>{const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.register("sw.js").then(r=>{r.update&&r.update()}).catch(()=>{});navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)try{toast("A new version is ready. Refresh the page to use it.",5000)}catch(e){}})})}
+
+/* ---------- install the app (web address only) ---------- */
+(function(){
+if(!/^https?:$/.test(location.protocol))return;
+const LS="imaan_install_v1";
+const rd=()=>{try{return JSON.parse(localStorage.getItem(LS))||{}}catch(e){return{}}},wr=o=>{try{localStorage.setItem(LS,JSON.stringify(o))}catch(e){}};
+let dp=null;
+const ua=navigator.userAgent||"";
+const standalone=()=>{try{return matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: window-controls-overlay)").matches||matchMedia("(display-mode: minimal-ui)").matches||navigator.standalone===true}catch(e){return false}};
+const IOS=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
+const AND=/Android/.test(ua);
+const INAPP=/FBAN|FBAV|Instagram|Line\/|MicroMessenger|Snapchat|TikTok|; wv\)|GSA\//.test(ua);
+const FF=/Firefox|FxiOS/.test(ua),SAM=/SamsungBrowser/.test(ua),EDG=/Edg\/|EdgA\/|EdgiOS/.test(ua);
+const SAF=/Safari/.test(ua)&&!/Chrome|CriOS|FxiOS|EdgiOS|Edg\/|Android/.test(ua);
+const MAC=/Macintosh/.test(ua)&&!IOS;
+const DESK=!IOS&&!AND;
+/* what to tell this person */
+function plan(){
+ if(standalone())return{mode:"done"};
+ if(INAPP)return{mode:"steps",lead:"Open this page in your phone's browser first",steps:["Tap the menu (three dots or the share icon) in this window.","Choose Open in browser, Open in Chrome or Open in Safari.","Then come back to this card to install."]};
+ if(dp)return{mode:"prompt",lead:DESK?"Install it on this computer":"Add it to your home screen"};
+ if(IOS)return{mode:"steps",lead:"Add it to your home screen",steps:SAF?["Tap the Share button at the bottom of Safari (the square with an arrow).","Scroll down and tap Add to Home Screen.","Tap Add. The app appears on your home screen."]:["Tap the Share button in your browser (the square with an arrow).","Tap Add to Home Screen. If you cannot see it, open this page in Safari and try again.","Tap Add."],note:"On iPhone and iPad the home screen app keeps its own data. Download a backup in Sync first, then restore it inside the new app."};
+ if(AND)return{mode:"steps",lead:"Add it to your home screen",steps:SAM?["Tap the menu button (three lines).","Tap Add page to, then Home screen, or Install app.","Confirm."]:FF?["Tap the menu (three dots).","Tap Install, or Add to Home screen.","Confirm."]:["Tap the menu (three dots) in your browser.","Tap Install app, or Add to Home screen.","Confirm."],note:"Already installed? Open Imaan Zikr from your apps."};
+ if(MAC&&SAF)return{mode:"steps",lead:"Add it to your Dock",steps:["In the Safari menu bar choose File.","Choose Add to Dock.","Open Imaan Zikr from your Dock or Launchpad."]};
+ if(FF)return{mode:"steps",lead:"Firefox cannot install apps on a computer",steps:["Open this page in Chrome or Edge to install it as an app.","Or bookmark this page (Ctrl+D) to open it quickly."]};
+ return{mode:"steps",lead:"Install it on this computer",steps:[EDG?"Click the install icon at the right of the address bar, or open the menu (three dots), then Apps, then Install this site as an app.":"Click the install icon at the right of the address bar, or open the menu (three dots), then Cast, save and share, then Install page as app.","Confirm. The app opens in its own window and appears in your apps.","Already installed? Open Imaan Zikr from your apps."]};
+}
+function body(p,compact){
+ let h=`<p class="mut" style="margin:.2rem 0 .8rem">${compact?"Opens in its own window or from your home screen, works without internet, and keeps your data on this device.":"It opens like a normal app, works without internet and keeps your data on this device. Free, no store, no account."}</p>`;
+ if(p.mode==="prompt")h+=`<div class="row" style="gap:.5rem;flex-wrap:wrap"><button class="btn pri" data-inst="go">Install app</button></div>`;
+ else{h+=`<ol class="instSt">${p.steps.map(s=>`<li>${s}</li>`).join("")}</ol>`;if(p.note)h+=`<p class="mut instNote">${p.note}</p>`}
+ return h}
+function render(){
+ const p=plan(),r=rd();
+ /* settings card */
+ const set=document.getElementById("p-settings");let c=document.getElementById("instSet");
+ if(set){if(!c){c=document.createElement("div");c.className="card";c.id="instSet";const a=document.getElementById("stBody");a?a.before(c):set.appendChild(c)}
+  c.innerHTML=p.mode==="done"?`<h3>Installed</h3><p class="mut" style="margin:.3rem 0 0">You are using the installed app. Updates arrive on their own when you are online.</p>`:`<h3>Install the app</h3><p style="margin:.2rem 0 .5rem;font-weight:600">${p.lead}</p>`+body(p)}
+ /* home banner */
+ const home=document.getElementById("p-home");let b=document.getElementById("instHome");
+ const hide=p.mode==="done"||(FF&&DESK)||(r.n||0)>=3||(r.t&&Date.now()-r.t<7*864e5)||(r.s||0)<2;
+ if(hide){if(b)b.remove();return}
+ if(!home)return;
+ if(!b){b=document.createElement("div");b.className="card";b.id="instHome";home.prepend(b)}
+ b.innerHTML=`<div class="instH"><div class="instT"><h3>Keep it on your ${DESK?"computer":"phone"}</h3><span class="mut">${p.mode==="prompt"?"One tap. Free, works offline.":p.lead}</span></div><div class="instB">${p.mode==="prompt"?'<button class="btn pri" data-inst="go">Install</button>':'<button class="btn pri" data-inst="how">Show me how</button>'}<button class="btn" data-inst="no" aria-label="Not now">Not now</button></div></div><div id="instMore" hidden>${p.mode==="steps"?body(p,true):""}</div>`}
+/* clicks */
+document.addEventListener("click",async e=>{const t=e.target.closest("[data-inst]");if(!t)return;const a=t.dataset.inst;
+ if(a==="go"&&dp){const d=dp;dp=null;try{await d.prompt();const c=await d.userChoice;if(c&&c.outcome==="accepted")toast("Installing. Look for Imaan Zikr in your apps.",4000);else{const r=rd();r.t=Date.now();wr(r)}}catch(x){}render()}
+ else if(a==="how"){const m=document.getElementById("instMore");if(m){m.hidden=!m.hidden;t.textContent=m.hidden?"Show me how":"Hide steps"}}
+ else if(a==="no"){const r=rd();r.t=Date.now();r.n=(r.n||0)+1;wr(r);render()}
+});
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();dp=e;render()});
+window.addEventListener("appinstalled",()=>{dp=null;try{toast("Installed. Open Imaan Zikr from your apps.",4000)}catch(e){}render()});
+try{matchMedia("(display-mode: standalone)").addEventListener("change",render)}catch(e){}
+/* count visits (one per day) */
+{const r=rd(),d=new Date().toISOString().slice(0,10);if(r.d!==d){r.d=d;r.s=(r.s||0)+1;wr(r)}}
+/* re-render when the person opens home or settings */
+const st0=setTab;setTab=function(t){const x=st0.apply(this,arguments);if(t==="home"||t==="settings")setTimeout(render,0);return x};
+/* shortcuts from the home screen icon: ?tab=salah */
+setTimeout(()=>{render();try{const q=new URLSearchParams(location.search).get("tab");if(q&&document.getElementById("p-"+q))setTab(q)}catch(e){}},400);
+})();
 </script>
 </body>
 </html>

@@ -5,7 +5,7 @@
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
- "orientation": "portrait",
+ "orientation": "any",
  "background_color": "#f4f7f7",
  "theme_color": "#1b7f85",
  "icons": [
@@ -26,6 +26,63 @@
    "sizes": "512x512",
    "type": "image/png",
    "purpose": "maskable"
+  }
+ ],
+ "id": "./",
+ "lang": "en",
+ "categories": [
+  "lifestyle",
+  "education"
+ ],
+ "shortcuts": [
+  {
+   "name": "Salah",
+   "short_name": "Salah",
+   "url": "./?tab=salah",
+   "icons": [
+    {
+     "src": "icons/icon-192.png",
+     "sizes": "192x192"
+    }
+   ]
+  },
+  {
+   "name": "Zikr counter",
+   "short_name": "Zikr",
+   "url": "./?tab=zikr",
+   "icons": [
+    {
+     "src": "icons/icon-192.png",
+     "sizes": "192x192"
+    }
+   ]
+  },
+  {
+   "name": "Quran",
+   "short_name": "Quran",
+   "url": "./?tab=quran",
+   "icons": [
+    {
+     "src": "icons/icon-192.png",
+     "sizes": "192x192"
+    }
+   ]
+  }
+ ],
+ "screenshots": [
+  {
+   "src": "icons/shot-wide.png",
+   "sizes": "1280x720",
+   "type": "image/png",
+   "form_factor": "wide",
+   "label": "Today at a glance"
+  },
+  {
+   "src": "icons/shot-narrow.png",
+   "sizes": "390x844",
+   "type": "image/png",
+   "form_factor": "narrow",
+   "label": "Prayers, zikr and Quran"
   }
  ]
 }
