@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Imaan & Zikr Tracker</title>
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Imaan Zikr">
@@ -426,6 +430,12 @@ body.simple #p-home>.grid2,body.simple #catch{display:none!important}
 .lnr{display:grid;grid-template-columns:repeat(5,1fr);gap:.4rem}.lnc{display:flex;flex-direction:column;align-items:center;padding:.4rem .1rem;border:1px solid var(--line);border-radius:10px;font-size:.78rem;min-height:48px}.lnc b{font-size:1rem}.lnc span{color:var(--tx2);min-height:1em}.lnc.on{background:var(--acs);border-color:var(--ac)}.lnc.now{box-shadow:0 0 0 2px var(--ac)}
 #homeRm[hidden],#planX[hidden]{display:none!important}
 @media(min-width:700px){#p-home>#homeRm{grid-column:1/-1}}
+
+/* ===== v14 ===== */
+.sug{margin-top:.9rem;padding:.8rem .9rem;border:1px solid var(--ac);border-radius:12px;background:var(--acs)}
+.chr{padding:.5rem 0;border-top:1px solid var(--line)}.chr:first-of-type{border-top:0}.chr .bar{margin-top:.4rem}
+#homeTv[hidden],#homeCh[hidden],#chCard[hidden]{display:none!important}
+@media(min-width:700px){#p-home>#homeTv{grid-column:1/-1}}
 #instHome{border-color:var(--pri,#1b7f85);background:linear-gradient(135deg,var(--card),var(--pill))}
 .instH{display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap}
 .instT{display:flex;flex-direction:column;gap:.15rem;min-width:0;flex:1 1 200px}
@@ -2120,6 +2130,81 @@ setInterval(()=>{if(!document.hidden)rmTick()},30000);
 window.rRm=rRm;window.rPlanX=rPlanX;window.rHifzX=rHifzX;window.v13={juz,daysUntil,nightNo,cdInfo};
 rPlan();rHome();
 })();
+/* ===== v14 (Phase 2, batch c): travel mode, one suggestion in the reviews, challenges ===== */
+(function(){
+const gm=()=>!D.ui||D.ui.gm!==false;
+const ids=a=>Array.isArray(a)?a:[];
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const dayDiff=(a,b)=>Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/864e5);
+const nzDay=d=>d&&typeof d==="object"&&!blankDay(d);
+/* ---------- 1. one suggestion for the weekly review and the monthly report ---------- */
+function sug(L,unit){const n=L.length,wk=unit==="week";
+if(wk&&n<3)return{t:"Try logging a little each day",b:"Even one prayer a day keeps the habit alive.",go:"salah",gl:"Open Salah"};
+if(L.filter(d=>d.exc&&d.exc!=="r").length>=(wk?3:8))return{t:"You had a lot on",b:"Doing what you could is enough. Choose one prayer to protect next "+unit+".",go:"salah",gl:"Open Salah"};
+const P=L.filter(d=>d.exc!=="r"),worst=PR.map(p=>[p,P.filter(d=>{const s=d.prayers&&d.prayers[p]&&d.prayers[p].status;return s==="Delayed"||s==="Missed"}).length]).sort((a,b)=>b[1]-a[1])[0];
+if(P.length&&worst&&worst[1]>=(wk?2:Math.max(4,Math.ceil(P.length*.25))))return{t:worst[0]+" was the hardest prayer",b:"Try a phone reminder ten minutes before "+worst[0]+", or tie it to something you already do at that time.",go:"notes",gl:"Set reminders"};
+const q=L.filter(d=>d.quran_read||(d.quran_pages||0)>0).length;if(q<=(wk?1:Math.floor(n*.2)))return{t:"Add a little Quran",b:"One page after a prayer you already keep is a gentle way in.",go:"quran",gl:"Open Quran"};
+const z=L.filter(d=>zsum(d)>0).length;if(z<=(wk?2:Math.floor(n*.3)))return{t:"Add a little zikr",b:"Ten counts after Fajr or Maghrib is enough to start.",go:"zikr",gl:"Open Zikr"};
+if(!L.some(d=>(d.gl&&d.gl.length)||(d.ref&&(d.ref.g||d.ref.m||d.ref.i))))return{t:"Try one line of reflection",b:"A single sentence of gratitude at night is enough.",go:"muh",gl:"Open reflection"};
+return{t:"A steady "+unit,b:"Keep the same routine. When you feel ready, add one small thing."}}
+const sugHtml=(s,id)=>`<div class="sug" id="${id}"><div class="mut caps">One suggestion</div><b>${s.t}</b><p class="mut" style="margin:.25rem 0 ${s.go?".6rem":"0"}">${s.b}</p>${s.go?`<button class="btn" data-tab="${s.go}">${s.gl}</button>`:""}</div>`;
+function sugWeek(){const w=$("#wk");if(!w)return;const o=$("#wkSug");if(o)o.remove();const L=[];for(let i=0;i<7;i++){const x=D.days[iso(addDays(TD,-i))];if(nzDay(x))L.push(x)}if(!L.length)return;w.insertAdjacentHTML("beforeend",sugHtml(sug(L,"week"),"wkSug"))}
+function sugMonth(){const b=$("#mrBody");if(!b||typeof mdata!=="function")return;const o=$("#mrSug");if(o)o.remove();const L=mdata().filter(x=>nzDay(x.d)).map(x=>x.d);if(L.length<5)return;b.insertAdjacentHTML("beforeend",sugHtml(sug(L,"month"),"mrSug").replace("One suggestion","One suggestion for next month"))}
+/* ---------- 2. travel mode ---------- */
+const LK=["lat","lng","tz","zone","cn","cc","src","acc","at","m","h","hadj","mset","hset","adj"];
+const devZone=()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||""}catch(e){return""}};
+const zlab=z=>String(z||"").replace(/_/g," ");
+function tvBase(){const o=D.loc;if(hasLoc()&&!o.dz&&devZone()){o.dz=devZone();save()}}
+function tvStart(){const o=D.loc;if(o.trv&&o.trv.on)return;const home={};LK.forEach(k=>{if(k in o)home[k]=JSON.parse(JSON.stringify(o[k]))});o.trv={on:true,s:T,home};o.adj={}}
+function tvHome(){const o=D.loc,t=o.trv;if(!t||!t.home)return;LK.forEach(k=>{if(k in t.home)o[k]=JSON.parse(JSON.stringify(t.home[k]));else delete o[k]});o.trv=null;o.dz=devZone()||o.dz;save();rSalah();rNp();if(typeof rPT==="function")rPT();if(typeof rLoc==="function")rLoc()}
+function rTv(){let c=$("#homeTv");if(!c){c=document.createElement("div");c.className="card";c.id="homeTv";c.style.order=5;$("#p-home").appendChild(c)}
+const o=D.loc,t=o.trv,z=devZone();let h="";
+if(t&&t.on){const hn=t.home&&t.home.cn?esc(t.home.cn):"home";h=`<div class="mut caps">Travel mode · since ${esc(t.s)}</div><p style="margin:.3rem 0">Prayer times use your current location. Your ${hn} settings are saved.</p><p class="mut" style="margin:0 0 .7rem">While travelling you may be able to shorten or combine some prayers. The rules depend on the distance and your school, so ask a scholar you trust.</p><div class="grp"><button class="btn pri" data-tv="gps">Update my location</button><button class="btn" data-tv="home">Back to ${hn}</button><button class="btn" data-tv="stay">Stay here</button></div>`}
+else if(hasLoc()&&o.dz&&z&&z!==o.dz&&o.dzack!==z){h=`<b>Your device time zone changed</b><p class="mut" style="margin:.3rem 0 .7rem">From ${esc(zlab(o.dz))} to ${esc(zlab(z))}. Prayer times follow your saved location${o.cn?" ("+esc(o.cn)+")":""}. Are you travelling?</p><div class="grp"><button class="btn pri" data-tv="go">Use my current location</button><button class="btn" data-tv="keep">Keep my saved location</button></div>`}
+c.hidden=!h;c.innerHTML=h}
+function rTvSet(){if(!$("#stBody"))return;let c=$("#tvCard");if(!c){c=document.createElement("div");c.className="card";c.id="tvCard";const a=$("#hcCard")||$("#spCard")||$("#fwCard")||$("#modeCard");if(a)a.after(c);else $("#stBody").before(c)}
+const on=D.loc.trv&&D.loc.trv.on;c.innerHTML=`<h3>Travel mode</h3><p class="mut" style="margin:.3rem 0 .8rem">${on?"On. Prayer times use your current location, and your home settings are saved.":"Saves your home location and minute adjustments, so you can use your current location while away and switch back in one tap."}</p>${hasLoc()||on?`<div class="grp"><button class="btn${on?"":" pri"}" data-tv="${on?"home":"start"}">${on?"Back to my home settings":"Start travel mode"}</button>${on?`<button class="btn" data-tv="stay">Stay here</button>`:""}</div>`:`<p class="mut">Set your location on the Salah page first.</p>`}`}
+/* ---------- 3. challenges (stored on this device, no account) ---------- */
+const nPrayed=r=>PR.filter(p=>r.prayers[p].status==="On Time"||r.prayers[p].status==="Delayed").length,nLogd=r=>PR.filter(p=>r.prayers[p].status!=="Not Logged").length;
+const CK={fajr:r=>r.prayers.Fajr.status==="On Time"||r.prayers.Fajr.status==="Delayed",quran:r=>(r.quran_pages||0)>=1||!!r.quran_read,five:r=>nLogd(r)>=5,zikr:r=>zsum(r)>=33};
+const CT=[["fajr7","Fajr every day for 7 days","fajr",7,"Pray Fajr, on time or late"],["quran7","Some Quran every day for 7 days","quran",7,"Read a page or more"],["five30","Log all five prayers for 30 days","five",30,"Log honestly, on time or not"],["zikr30","33 zikr every day for 30 days","zikr",30,"Count 33 or more"]];
+const chs=()=>ids(D.loc.ch).filter(c=>c&&typeof c==="object"&&c.id&&c.len>0&&c.s).map(c=>{c.d=ids(c.d);return c});
+const chEnd=c=>addD(c.s,c.len-1),chOver=c=>T>chEnd(c),chActive=c=>!chOver(c);
+function chCheck(){let ch=false;chs().forEach(c=>{if(!chActive(c)||c.k==="manual"||c.d.includes(T)||T<c.s)return;if(CK[c.k]&&CK[c.k](rec())){c.d.push(T);ch=true;if(T===chEnd(c))toast("Challenge finished: "+c.t,4000)}});if(ch)save()}
+const chMsg=c=>`I finished “${c.t}”: ${c.d.length} of ${c.len} days. Alhamdulillah.`;
+function chRow(c,manage){const k=Math.min(c.len,Math.max(1,dayDiff(c.s,T)+1)),over=chOver(c),n=c.d.length,today=c.d.includes(T);
+const bar=`<div class="bar" aria-hidden="true"><i style="width:${Math.min(100,n/c.len*100)}%"></i></div>`;
+return `<div class="chr" data-chid="${c.id}"><div class="hd"><span><b>${esc(c.t)}</b><br><span class="mut">${over?`Finished: ${n} of ${c.len} days`:`Day ${k} of ${c.len} · ${n} done`}</span></span><span class="grp">${!over&&c.k==="manual"?`<button class="btn${today?"":" pri"}" data-chdone="${c.id}" aria-pressed="${today}">${today?"Done today ✓":"Done today"}</button>`:""}${over&&manage?`<button class="btn" data-chcopy="${c.id}">Copy message</button>`:""}${manage?`<button class="star" data-chdel="${c.id}" aria-label="Remove ${esc(c.t)}">✕</button>`:""}</span></div>${bar}</div>`}
+function rCh(){let c=$("#homeCh");if(!c){c=document.createElement("div");c.className="card";c.id="homeCh";c.style.order=8;$("#p-home").appendChild(c)}
+const a=chs().filter(chActive);if(!gm()||!a.length){c.hidden=true;c.innerHTML="";return}
+c.hidden=false;c.innerHTML=`<div class="hd"><h3>Challenges</h3><button class="btn" data-tab="streaks">Manage</button></div>${a.map(x=>chRow(x,false)).join("")}`}
+function rChPage(){const p=$("#p-streaks");if(!p)return;let c=$("#chCard");if(!c){c=document.createElement("div");c.className="card";c.id="chCard";p.prepend(c)}
+if(!gm()){c.hidden=true;return}c.hidden=false;const all=chs(),act=all.filter(chActive),fin=all.filter(chOver),full=act.length>=5;
+c.innerHTML=`<h3>Challenges</h3><p class="mut" style="margin:.3rem 0 .8rem">A short run of days with one small goal. It stays on this device. Missing a day just means that day is not ticked.</p>${act.map(x=>chRow(x,true)).join("")||`<p class="mut">No challenge is running.</p>`}${fin.length?`<h4 style="margin:.9rem 0 .3rem">Finished</h4>${fin.map(x=>chRow(x,true)).join("")}`:""}<h4 style="margin:.9rem 0 .4rem">Start one</h4>${full?`<p class="mut">You have 5 running. Finish or remove one to start another.</p>`:`<div class="spl">${CT.map(([id,t,,,h])=>`<button class="spo" data-chnew="${id}"><b>${t}</b><span class="mut">${h}</span></button>`).join("")}</div><div class="grp" style="margin-top:.7rem"><input id="chT" maxlength="40" placeholder="My own goal (for example: no phone after Isha)" aria-label="Your own challenge" style="flex:1;min-width:180px"><input id="chN" type="number" min="1" max="100" value="7" aria-label="Number of days" style="width:80px"><button class="btn" data-chmine="1">Start</button></div>`}`}
+/* ---------- events ---------- */
+document.addEventListener("click",e=>{const t=e.target,g=s=>t.closest&&t.closest(s);let b;
+if(b=g("[data-tv]")){const v=b.dataset.tv,o=D.loc;
+ if(v==="go"||v==="start"){tvStart();o.dz=devZone()||o.dz;save();rTv();rTvSet();if(v==="go")detectLoc(true);else toast("Travel mode on. Set your current location on the Salah page");return}
+ if(v==="gps"){detectLoc(true);return}
+ if(v==="keep"){o.dzack=devZone();save();rTv();return}
+ if(v==="home"){tvHome();rTv();rTvSet();toast("Back to your home settings");return}
+ if(v==="stay"){o.trv=null;o.dz=devZone()||o.dz;save();rTv();rTvSet();toast("Travel mode ended. Staying on the current location");return}return}
+if(b=g("[data-chnew]")){const x=CT.find(a=>a[0]===b.dataset.chnew);if(!x||chs().filter(chActive).length>=5)return;D.loc.ch=[...chs(),{id:"c"+Date.now().toString(36),t:x[1],k:x[2],len:x[3],s:T,d:[]}];chCheck();save();rChPage();rCh();toast("Challenge started");return}
+if(g("[data-chmine]")){const nm=$("#chT").value.trim().slice(0,40),n=Math.round(+$("#chN").value);if(!nm)return toast("Write your goal first");if(!(n>=1&&n<=100))return toast("Choose 1 to 100 days");if(chs().filter(chActive).length>=5)return;D.loc.ch=[...chs(),{id:"c"+Date.now().toString(36),t:nm,k:"manual",len:n,s:T,d:[]}];save();rChPage();rCh();toast("Challenge started");return}
+if(b=g("[data-chdone]")){const c=chs().find(x=>x.id===b.dataset.chdone);if(!c||!chActive(c))return;const i=c.d.indexOf(T);if(i>=0)c.d.splice(i,1);else{c.d.push(T);if(T===chEnd(c))toast("Challenge finished: "+c.t,4000)}save();rCh();rChPage();return}
+if(b=g("[data-chdel]")){D.loc.ch=chs().filter(x=>x.id!==b.dataset.chdel);save();rCh();rChPage();return}
+if(b=g("[data-chcopy]")){const c=chs().find(x=>x.id===b.dataset.chcopy);if(c)copyTxt(chMsg(c),"Message copied");return}});
+/* ---------- hooks ---------- */
+const rh14=rHome;rHome=function(){chCheck();rh14.apply(this,arguments);rTv();rCh()};
+const rs14=rStreaks;rStreaks=function(){rs14.apply(this,arguments);rChPage()};
+const rw14=rWeek;rWeek=function(){rw14();sugWeek()};
+const rm14=rMr;rMr=function(){rm14();sugMonth()};
+const st14=setTab;setTab=function(t){st14(t);if(t==="settings")rTvSet()};
+if(window.v12&&v12.HC){const i=v12.HC.findIndex(x=>x[0]==="grid2");v12.HC.splice(i+1,0,["homeCh","#homeCh","Challenges",1])}
+window.v14={sug,CT,tvStart,tvHome,chCheck,chMsg};window.rTv=rTv;window.rCh=rCh;window.rChPage=rChPage;
+tvBase();rHome();rStreaks();
+})();
+
 
 
 
@@ -2153,7 +2238,7 @@ function plan(){
  if(INAPP)return{mode:"steps",lead:"Open this page in your phone's browser first",steps:["Tap the menu (three dots or the share icon) in this window.","Choose Open in browser, Open in Chrome or Open in Safari.","Then come back to this card to install."]};
  if(dp)return{mode:"prompt",lead:DESK?"Install it on this computer":"Add it to your home screen"};
  if(IOS)return{mode:"steps",lead:"Add it to your home screen",steps:SAF?["Tap the Share button at the bottom of Safari (the square with an arrow).","Scroll down and tap Add to Home Screen.","Tap Add. The app appears on your home screen."]:["Tap the Share button in your browser (the square with an arrow).","Tap Add to Home Screen. If you cannot see it, open this page in Safari and try again.","Tap Add."],note:"On iPhone and iPad the home screen app keeps its own data. Download a backup in Sync first, then restore it inside the new app."};
- if(AND)return{mode:"steps",lead:"Add it to your home screen",steps:SAM?["Tap the menu button (three lines).","Tap Add page to, then Home screen, or Install app.","Confirm."]:FF?["Tap the menu (three dots).","Tap Install, or Add to Home screen.","Confirm."]:["Tap the menu (three dots) in your browser.","Tap Install app, or Add to Home screen.","Confirm."],note:"Already installed? Open Imaan Zikr from your apps."};
+ if(AND)return{mode:"steps",lead:"Add it to your home screen",steps:SAM?["Tap the menu button (three lines).","Tap Add page to, then Home screen, or Install app.","Confirm."]:FF?["Tap the menu (three dots).","Tap Install, or Add to Home screen.","Confirm."]:["Use Chrome. Tap the menu (three dots) at the top right.","Tap Install app. If you only see Add to Home screen, tap that instead.","Confirm. The app appears in your app list and on your home screen."],note:"Not seeing Install? Open this address in Chrome (not inside WhatsApp, Facebook or another app), refresh once, and look again. Already installed? Open Imaan Zikr from your apps."};
  if(MAC&&SAF)return{mode:"steps",lead:"Add it to your Dock",steps:["In the Safari menu bar choose File.","Choose Add to Dock.","Open Imaan Zikr from your Dock or Launchpad."]};
  if(FF)return{mode:"steps",lead:"Firefox cannot install apps on a computer",steps:["Open this page in Chrome or Edge to install it as an app.","Or bookmark this page (Ctrl+D) to open it quickly."]};
  return{mode:"steps",lead:"Install it on this computer",steps:[EDG?"Click the install icon at the right of the address bar, or open the menu (three dots), then Apps, then Install this site as an app.":"Click the install icon at the right of the address bar, or open the menu (three dots), then Cast, save and share, then Install page as app.","Confirm. The app opens in its own window and appears in your apps.","Already installed? Open Imaan Zikr from your apps."]};
@@ -2171,7 +2256,7 @@ function render(){
   c.innerHTML=p.mode==="done"?`<h3>Installed</h3><p class="mut" style="margin:.3rem 0 0">You are using the installed app. Updates arrive on their own when you are online.</p>`:`<h3>Install the app</h3><p style="margin:.2rem 0 .5rem;font-weight:600">${p.lead}</p>`+body(p)}
  /* home banner */
  const home=document.getElementById("p-home");let b=document.getElementById("instHome");
- const hide=p.mode==="done"||(FF&&DESK)||(r.n||0)>=3||(r.t&&Date.now()-r.t<7*864e5)||(r.s||0)<2;
+ const hide=p.mode==="done"||(FF&&DESK)||(r.n||0)>=3||(r.t&&Date.now()-r.t<7*864e5)||(r.s||0)<1;
  if(hide){if(b)b.remove();return}
  if(!home)return;
  if(!b){b=document.createElement("div");b.className="card";b.id="instHome";home.prepend(b)}
@@ -2192,6 +2277,10 @@ const st0=setTab;setTab=function(t){const x=st0.apply(this,arguments);if(t==="ho
 /* shortcuts from the home screen icon: ?tab=salah */
 setTimeout(()=>{render();try{const q=new URLSearchParams(location.search).get("tab");if(q&&document.getElementById("p-"+q))setTab(q)}catch(e){}},400);
 })();
+/* tab icon and home-screen icon: real files (the browser tab and installed app show them) */
+(function(){try{document.querySelectorAll('link[rel="icon"],link[rel="shortcut icon"],link[rel="apple-touch-icon"]').forEach(l=>l.remove());
+const add=(rel,href,type,sizes)=>{const l=document.createElement("link");l.rel=rel;l.href=href;if(type)l.type=type;if(sizes)l.sizes=sizes;document.head.appendChild(l)};
+add("icon","icons/favicon-32.png","image/png","32x32");add("icon","icons/icon-192.png","image/png","192x192");add("shortcut icon","favicon.ico");add("apple-touch-icon","icons/apple-touch-icon.png",null,"180x180")}catch(e){}})();
 </script>
 </body>
 </html>
