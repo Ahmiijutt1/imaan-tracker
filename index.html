@@ -420,6 +420,12 @@ body.simple #p-home>.grid2,body.simple #catch{display:none!important}
 .hcl{list-style:none;margin:0;padding:0;display:grid;gap:.2rem}.hcl li{display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;padding:.4rem 0;border-top:1px solid var(--line)}.hcn{flex:1 1 100%}.hcb{display:flex;align-items:center;gap:.4rem}.hcb .btn{min-width:44px;min-height:44px;padding:0;justify-content:center}.hcb .btn:disabled{opacity:.35}.hcv{min-width:6.5rem;display:inline-flex;align-items:center;gap:.3rem}
 #homeCz{text-align:center;padding:.4rem 0}
 @media(min-width:700px){#p-home>#homeSp,#p-home>#homeCz{grid-column:1/-1}}
+
+/* ===== v13 ===== */
+.hfcal{display:grid;grid-template-columns:repeat(7,1fr);gap:.35rem}.hfd{display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.35rem .1rem;border:1px solid var(--line);border-radius:10px;background:var(--card);font-size:.8rem}.hfd span{color:var(--tx2)}.hfd b{font-size:.95rem}.hfd i{font-style:normal;font-weight:700;color:var(--ac)}.hfd.on{border-color:var(--ac);background:var(--acs)}
+.lnr{display:grid;grid-template-columns:repeat(5,1fr);gap:.4rem}.lnc{display:flex;flex-direction:column;align-items:center;padding:.4rem .1rem;border:1px solid var(--line);border-radius:10px;font-size:.78rem;min-height:48px}.lnc b{font-size:1rem}.lnc span{color:var(--tx2);min-height:1em}.lnc.on{background:var(--acs);border-color:var(--ac)}.lnc.now{box-shadow:0 0 0 2px var(--ac)}
+#homeRm[hidden],#planX[hidden]{display:none!important}
+@media(min-width:700px){#p-home>#homeRm{grid-column:1/-1}}
 #instHome{border-color:var(--pri,#1b7f85);background:linear-gradient(135deg,var(--card),var(--pill))}
 .instH{display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap}
 .instT{display:flex;flex-direction:column;gap:.15rem;min-width:0;flex:1 1 200px}
@@ -2054,6 +2060,67 @@ const st12=setTab;setTab=function(t){st12(t);if(t==="settings"){rSpSet();rHcSet(
 window.rSp=rSp;window.spCheck=spCheck;window.v12={SP,HC,spCheck,rSp,applyHc,hcOrder};
 rHome();
 })();
+/* ===== v13 (Phase 2, batch b): Quran plan extras, Hifz revision calendar, Ramadan ===== */
+(function(){
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const daysUntil=(pred,max=400)=>{for(let i=1;i<=max;i++){const h=hij(addDays(TD,i));if(h&&pred(h))return i}return null};
+const juz=p=>p<=21?1:Math.min(30,Math.floor((p-2)/20)+1);
+const wd=d=>d.toLocaleDateString("en",{weekday:"long",day:"numeric",month:"long"});
+/* ---------- 1. Quran plan: your own length, finish before or by the end of Ramadan, today's pages, add days ---------- */
+function planNums(){const p=D.plan,N=p.n,no=Math.max(1,Math.round((TD-new Date(p.s+"T00:00:00"))/864e5)+1),read=Object.entries(D.days).reduce((a,[k,d])=>k>=p.s?a+(d.quran_pages||0):a,0),tp=rec().quran_pages||0,left=Math.max(1,N-no+1),need=Math.max(0,Math.ceil((604-(read-tp))/left)),short=Math.max(0,Math.ceil(604*Math.min(no,N)/N-read));return{N,no,read,tp,need,short,base:Math.ceil(604/N)}}
+function rPlanX(){const pc=$("#planCard");if(!pc)return;let el=$("#planX");if(!el){el=document.createElement("div");el.className="card";el.id="planX";pc.after(el)}const p=D.plan;
+if(!p){const h=hij(TD),toR=h&&h.m!==9?daysUntil(x=>x.m===9&&x.d===1):null,inR=h&&h.m===9?daysUntil(x=>x.m===10&&x.d===1):null;
+el.hidden=false;el.innerHTML=`<h3>More ways to plan</h3><div class="grp"><input type="number" id="plCustom" min="1" max="730" placeholder="Days" aria-label="Number of days to finish in" style="width:110px"><button class="btn" id="plCustomGo">Start with my own days</button></div>${toR&&toR>=7?`<div class="grp" style="margin-top:.6rem"><button class="btn" id="plRam" data-n="${toR}">Finish before Ramadan (${toR} days)</button></div>`:""}${inR&&inR>=3?`<div class="grp" style="margin-top:.6rem"><button class="btn" id="plRam" data-n="${inR}">Finish by the end of Ramadan (${inR} days)</button></div>`:""}`;return}
+const n=planNums();if(n.read>=604){el.hidden=true;el.innerHTML="";return}
+const before=n.read-n.tp,first=Math.min(604,before+1),last=Math.min(604,before+n.need);let h=`<p style="margin:0 0 .4rem">Usual pace: <b>${n.base} page${n.base>1?"s":""}</b> a day. Today’s target: <b>${n.need}</b>${n.need>n.base?` (includes ${n.need-n.base} to catch up)`:""}.</p>`;
+if(n.need>0)h+=`<p class="mut" style="margin:0 0 .6rem">If you read in order, today is pages ${first}${last>first?"–"+last:""} (Juz ${juz(first)}${juz(last)!==juz(first)?" to "+juz(last):""}).</p>`;
+if(n.short>=n.base||n.no>n.N)h+=`<div style="border-top:1px solid var(--line);padding-top:.6rem"><p style="margin:0 0 .5rem"><b>${n.no>n.N?"The planned days have ended.":"You are "+n.short+" pages behind."}</b> <span class="mut">Adding days lowers each day’s target. Nothing is lost.</span></p><div class="grp"><button class="btn pri" data-plx="7">Add 7 days</button><button class="btn" data-plx="14">Add 14 days</button></div></div>`;
+el.hidden=!h;el.innerHTML=h}
+/* ---------- 2. Hifz: revision calendar, overdue note, move to tomorrow ---------- */
+function rHifzX(){const l=$("#hfList");if(!l)return;const L=D.hifz||[],rev=L.filter(i=>i.st==="rev"),nw=L.filter(i=>i.st==="new").length;if(!rev.length&&!nw)return;
+const due=i=>addD(i.last,HI[i.n]),over=rev.filter(i=>due(i)<T).length,cells=[];
+for(let k=0;k<14;k++){const d=addDays(TD,k),key=iso(d),c=rev.filter(i=>k===0?due(i)<=T:due(i)===key).length;cells.push(`<div class="hfd${k===0?" on":""}" role="listitem" aria-label="${wd(d)}: ${c} review${c===1?"":"s"}${k===0?", today":""}"><span>${d.toLocaleDateString("en",{weekday:"narrow"})}</span><b>${d.getDate()}</b><i>${c||"·"}</i></div>`)}
+const mx=Math.max(0,...cells.map((_,k)=>rev.filter(i=>k===0?due(i)<=T:due(i)===iso(addDays(TD,k))).length));
+l.insertAdjacentHTML("afterbegin",`<div class="card" id="hfCal"><h3>Revision calendar</h3><p class="mut" style="margin:.2rem 0 .6rem">Reviews due in the next two weeks. Today includes anything overdue.</p><div class="hfcal" role="list">${cells.join("")}</div>${over?`<p style="margin:.7rem 0 0"><b>${over} overdue.</b> <span class="mut">Review the oldest first. Being late loses nothing.</span></p>`:""}${mx>6?`<p class="mut" style="margin:.5rem 0 0">A heavy day is coming. “Tomorrow” on a review spreads the load.</p>`:""}</div>`);
+l.querySelectorAll('button[data-hrev$=":1"]').forEach(b=>b.insertAdjacentHTML("afterend",`<button class="btn" data-hsnz="${b.dataset.hrev.split(":")[0]}">Tomorrow</button>`))}
+/* ---------- 3. Ramadan ---------- */
+const FAS=()=>typeof FA!=="undefined"?FA:["Fasting","Did not fast (excused)","Did not fast"];
+function nightNo(h,c,t){return c<t.Fajr?h.d:h.d+1}
+const LN=[["q","Night prayer"],["r","Quran"],["d","Dua and istighfar"],["s","Charity"]];
+function cdInfo(){if(!hasLoc())return null;const ln=locNow(),c=ln.getHours()+ln.getMinutes()/60+ln.getSeconds()/3600,t=pt(pd());let lb,tg;if(c<t.Fajr){lb="Suhoor ends in";tg=t.Fajr}else if(c<t.Maghrib){lb="Iftar in";tg=t.Maghrib}else{lb="Next suhoor ends in";tg=pt(addDays(pd(),1)).Fajr+24}
+let m=Math.max(0,Math.ceil((tg-c)*60-.0001));const hh=Math.floor(m/60),mm=m%60;return{lb,tx:hh?`${hh}h ${mm}m`:`${mm} min`,t,c}}
+function rmTick(){const e=$("#rmCd");if(!e)return;const i=cdInfo();if(i)e.innerHTML=`<span class="mut">${i.lb}</span> <b class="big">${i.tx}</b>`}
+function rRm(){let c=$("#homeRm");if(!c){c=document.createElement("div");c.className="card";c.id="homeRm";c.style.order=5;$("#p-home").appendChild(c)}
+const h=hij(TD);let out="";if(!h){c.hidden=true;c.innerHTML="";return}const rc=rec(),FAx=FAS();
+if(D.ram&&!(h.m===9||(h.m===8&&h.d>=26))){if(D.loc.rmk!==h.y+"-"+h.m)out=`<b>${h.m===10&&h.d===1?"Eid Mubarak. ":""}Ramadan has ended</b><p class="mut" style="margin:.3rem 0 .7rem">Turn Ramadan mode off to hide the Taraweeh and suhoor cards. Your Ramadan records stay.</p><div class="grp"><button class="btn pri" data-rm="off">Turn Ramadan mode off</button><button class="btn" data-rm="keep">Keep it on</button></div>`}
+else if(D.ram){const i=cdInfo(),t=i&&i.t,nn=t?nightNo(h,i.c,t):0,s=rc.fast.status,ts=rc.tar.status;
+out=`<div class="mut caps">Ramadan${h.m===9?" · day "+h.d:""}</div>${i?`<div id="rmCd" style="margin:.3rem 0" aria-live="off"></div><div class="mut" style="font-size:.86rem">Fajr ${fmt(t.Fajr)} · Maghrib ${fmt(t.Maghrib)}</div>`:`<p class="mut" style="margin:.3rem 0">Set your location to see suhoor and iftar countdowns.</p>`}<div class="grp" style="margin-top:.7rem"><span class="mut" style="align-self:center">Today’s fast</span><button class="btn${s===FAx[0]?" pri":""}" data-rmf="0" aria-pressed="${s===FAx[0]}">Fasting</button><button class="btn${s===FAx[1]?" pri":""}" data-rmf="1" aria-pressed="${s===FAx[1]}">Excused</button></div><div class="grp" style="margin-top:.5rem"><span class="mut" style="align-self:center">Taraweeh</span><button class="btn${ts===TR[0]?" pri":""}" data-rmt="0" aria-pressed="${ts===TR[0]}">Prayed</button><button class="btn${ts===TR[1]?" pri":""}" data-rmt="1" aria-pressed="${ts===TR[1]}">Some</button></div>`;
+ if(h.m===9&&nn>=21&&nn<=30){const odd=nn%2===1,it=(rc.ln&&rc.ln[nn])||{};out+=`<div style="border-top:1px solid var(--line);margin-top:.8rem;padding-top:.7rem"><div class="mut caps">Last ten nights · night ${nn}</div>${odd?`<p style="margin:.3rem 0">Odd night: seek Laylat al-Qadr.</p>`:""}<div class="grp" style="margin-top:.4rem">${LN.map(([k,l])=>`<button class="btn${it[k]?" pri":""}" data-rml="${k}" aria-pressed="${!!it[k]}">${l}</button>`).join("")}</div><div class="grp" style="margin-top:.5rem"><button class="btn" data-tab="duas">Open Duas</button><button class="btn" data-tab="fast">All ten nights</button></div></div>`}}
+else if(h.m===9){if(D.loc.rmn!==T)out=`<b>Ramadan has begun</b><p class="mut" style="margin:.3rem 0 .7rem">By the Umm al-Qura calendar it is Ramadan. Moon sighting where you live can differ by a day, so turn Ramadan mode on when your community starts.</p><div class="grp"><button class="btn pri" data-rm="on">Turn Ramadan mode on</button><button class="btn" data-rm="today">Not today</button></div>`}
+else if(h.m===8){const n=daysUntil(x=>x.m===9&&x.d===1);if(n&&n<=10&&D.loc.rmp!==h.y)out=`<b>Ramadan is about ${n} day${n>1?"s":""} away</b><p class="mut" style="margin:.3rem 0 .7rem">A good time to check your prayer times and plan your Quran reading.</p><div class="grp"><button class="btn pri" data-tab="quran">Plan Quran reading</button><button class="btn" data-rm="pre">Dismiss</button></div>`}
+c.hidden=!out;c.innerHTML=out;rmTick()}
+function rFastX(){const f=$("#fastRows"),h=hij(TD);if(!f||!D.ram||!h||h.m!==9||h.d<20)return;const i=cdInfo(),nn=i?nightNo(h,i.c,i.t):h.d+1,got=n=>Object.values(D.days).some(d=>d.ln&&d.ln[n]&&Object.values(d.ln[n]).some(Boolean)),k=[21,22,23,24,25,26,27,28,29,30],dn=k.filter(got).length;
+f.insertAdjacentHTML("beforeend",`<div class="card" id="fastLn"><h3>Last ten nights</h3><p class="mut" style="margin:.2rem 0 .6rem">Tick what you did on each night from the Home page. Odd nights are marked.</p><div class="lnr" role="list">${k.map(n=>`<div class="lnc${got(n)?" on":""}${n===nn?" now":""}" role="listitem" aria-label="Night ${n}${n%2?", odd night":""}${got(n)?", something done":""}${n===nn?", tonight":""}"><b>${n}</b><span>${n%2?"odd":""}</span></div>`).join("")}</div><p class="mut" style="margin:.6rem 0 0">${dn} of 10 nights with something done.</p></div>`)}
+/* ---------- events ---------- */
+document.addEventListener("click",e=>{const t=e.target,g=s=>t.closest&&t.closest(s);let b;
+if(g("#plCustomGo")){const v=Math.round(+$("#plCustom").value);if(!(v>=1&&v<=730))return toast("Enter a number of days from 1 to 730");D.plan={s:T,n:v};save();rPlan();return}
+if(b=g("#plRam")){D.plan={s:T,n:+b.dataset.n};save();rPlan();toast("Plan started");return}
+if(b=g("[data-plx]")){if(!D.plan)return;D.plan.n=Math.min(730,D.plan.n+ +b.dataset.plx);save();rPlan();toast(b.dataset.plx+" days added");return}
+if(b=g("[data-hsnz]")){const i=D.hifz.find(x=>x.id===b.dataset.hsnz);if(i&&i.st==="rev"){i.last=addD(T,1-HI[i.n]);save();rHifz();toast("Moved to tomorrow")}return}
+if(b=g("[data-rm]")){const v=b.dataset.rm,h=hij(TD)||{};if(v==="on"){D.ram=true;D.ram_s=T;toast("Ramadan mode on. Ramadan Mubarak")}else if(v==="off"){D.ram=false;toast("Ramadan mode off")}else if(v==="keep")D.loc.rmk=h.y+"-"+h.m;else if(v==="today")D.loc.rmn=T;else if(v==="pre")D.loc.rmp=h.y;save();rRm();if(typeof rFast==="function")rFast();return}
+if(b=g("[data-rmf]")){rec().fast.status=FAS()[+b.dataset.rmf];save();all();if(typeof rFast==="function")rFast();return}
+if(b=g("[data-rmt]")){rec().tar.status=TR[+b.dataset.rmt];save();all();return}
+if(b=g("[data-rml]")){const h=hij(TD),i=cdInfo();if(!h||!i)return;const n=nightNo(h,i.c,i.t),r=rec();r.ln=r.ln||{};r.ln[n]=r.ln[n]||{};r.ln[n][b.dataset.rml]=!r.ln[n][b.dataset.rml];save();rRm();rFast();return}});
+/* ---------- hooks ---------- */
+const rp13=rPlan;rPlan=function(){rp13();rPlanX()};
+const rhf13=rHifz;rHifz=function(){rhf13();rHifzX()};
+const rf13=rFast;rFast=function(){rf13();rFastX()};
+const rh13=rHome;rHome=function(){rh13.apply(this,arguments);rRm()};
+setInterval(()=>{if(!document.hidden)rmTick()},30000);
+window.rRm=rRm;window.rPlanX=rPlanX;window.rHifzX=rHifzX;window.v13={juz,daysUntil,nightNo,cdInfo};
+rPlan();rHome();
+})();
+
 
 
 
