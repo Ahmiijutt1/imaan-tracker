@@ -436,6 +436,23 @@ body.simple #p-home>.grid2,body.simple #catch{display:none!important}
 .chr{padding:.5rem 0;border-top:1px solid var(--line)}.chr:first-of-type{border-top:0}.chr .bar{margin-top:.4rem}
 #homeTv[hidden],#homeCh[hidden],#chCard[hidden]{display:none!important}
 @media(min-width:700px){#p-home>#homeTv{grid-column:1/-1}}
+/* ===== v17 (Phase 3b): accessibility ===== */
+:root{--ac:#1b7f85;--acd:#17696e;--ok:#177a54;--wn:#9a6200;--bad:#c0322e;--gold:#8a6414}
+html[data-app-theme="light"]:root{--gold:#8a6414}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ac:#2ca4ab;--acd:#1b7f85;--ok:#34c38f;--wn:#f0a93a;--bad:#f06a66;--gold:#e6bf5c}}
+:root[data-theme="dark"],html[data-app-theme="dark"]:root{--ac:#2ca4ab;--acd:#1b7f85;--ok:#34c38f;--wn:#f0a93a;--bad:#f06a66;--gold:#e6bf5c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.on,:root:not([data-theme="light"]) .btn.pri,:root:not([data-theme="light"]) .chip.on,:root:not([data-theme="light"]) .rp.on{background:#1b7f85;border-color:#1b7f85;color:#fff}}
+:root[data-theme="dark"] button.on,:root[data-theme="dark"] .btn.pri,:root[data-theme="dark"] .chip.on,:root[data-theme="dark"] .rp.on{background:#1b7f85;border-color:#1b7f85;color:#fff}
+html[data-app-theme="dark"] button.on,html[data-app-theme="dark"] .btn.pri,html[data-app-theme="dark"] .chip.on,html[data-app-theme="dark"] .rp.on{background:#1b7f85;border-color:#1b7f85;color:#fff}
+.skip{position:fixed;inset-inline-start:.5rem;top:-4rem;z-index:300;background:var(--tx);color:var(--bg);padding:.6rem 1rem;border-radius:10px;font-weight:700;text-decoration:none}.skip:focus{top:.5rem}
+button.star{min-width:36px;min-height:36px}
+a.mut,a.btn{display:inline-block;padding-block:.35rem;min-height:32px}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+html[data-fs="l"]{font-size:112.5%}html[data-fs="x"]{font-size:125%}
+html[data-fs="l"] .bnav .tab,html[data-fs="x"] .bnav .tab{font-size:.72rem}
+#fsCard .grp button{min-height:44px}
+@media (prefers-contrast:more){:root{--tx2:#3d464e;--line:#9aa5ae}}
 #instHome{border-color:var(--pri,#1b7f85);background:linear-gradient(135deg,var(--card),var(--pill))}
 .instH{display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap}
 .instT{display:flex;flex-direction:column;gap:.15rem;min-width:0;flex:1 1 200px}
@@ -2224,6 +2241,35 @@ Object.assign(UR,{"Add it to your Dock": "اسے اپنے ڈاک میں شامل
 /*HJ*/const HJ={"Jumada I":"جمادی الاول","Jumada II":"جمادی الثانی","Rabiʻ I":"ربیع الاول","Rabiʻ II":"ربیع الثانی","Shaʻban":"شعبان","Dhuʻl-Qiʻdah":"ذوالقعدہ","Dhuʻl-Hijjah":"ذوالحجہ"};
 for(const x of P)URP.push(x);
 })();
+/* ===== v17 (Phase 3b): accessibility, text size ===== */
+(function(){
+const NM={qPages:"Quran pages read today",addSel:"Choose a surah to add to your checklist",zSel:"Choose a zikr",zNew:"Name of a custom zikr",zTarget:"Target count",zManual:"Count done earlier",hSel:"Choose a date",rNew:"New reminder text",hbNew:"New habit name",cmN:"Name of a custom zikr",jnNi:"Your intention for today",glNew:"Something you are grateful for"};
+function lab(){
+ document.querySelectorAll("input:not([type=hidden]):not([type=checkbox]):not([type=radio]),select,textarea,input[type=checkbox],input[type=radio]").forEach(e=>{
+  if(e.getAttribute("aria-label")||e.getAttribute("aria-labelledby")||(e.id&&document.querySelector('label[for="'+e.id+'"]'))||e.closest("label")||e.title)return;
+  let n=NM[e.id]||e.getAttribute("placeholder");
+  if(!n){const p=e.previousElementSibling;if(p&&p.textContent&&p.textContent.trim().length<60)n=p.textContent.trim()}
+  if(!n){const h=e.closest(".card");const t=h&&h.querySelector("h3");if(t)n=t.textContent.trim()}
+  if(n)e.setAttribute("aria-label",n)});
+ document.querySelectorAll(".bnav .tab").forEach(b=>{if(b.classList.contains("on"))b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+ document.querySelectorAll(".sl button,.segs button").forEach(b=>{if(b.classList.contains("on"))b.setAttribute("aria-current","true");else b.removeAttribute("aria-current")});
+ document.querySelectorAll("button").forEach(b=>{if(!(b.getAttribute("aria-label")||b.textContent.trim()||b.title)){const t=b.getAttribute("data-tab")||b.id;if(t)b.setAttribute("aria-label",t.replace(/[-_]/g," "))}});
+}
+let tm=0;try{new MutationObserver(()=>{clearTimeout(tm);tm=setTimeout(lab,60)}).observe(document.body,{childList:true,subtree:true})}catch(e){}
+/* skip link and main landmark */
+(function(){const w=document.querySelector(".wrap");if(w){if(!w.id)w.id="main";if(!w.getAttribute("role"))w.setAttribute("role","main");w.setAttribute("tabindex","-1")}
+ if(!document.querySelector(".skip")){const a=document.createElement("a");a.className="skip";a.href="#"+((w&&w.id)||"main");a.textContent="Skip to content";a.addEventListener("click",e=>{if(w){e.preventDefault();w.focus()}});document.body.prepend(a)}})();
+/* text size (per device) */
+const FS={n:["Normal",""],l:["Large","l"],x:["Larger","x"]};
+const fsApply=()=>{const v=(D.loc&&D.loc.fs)||"n";if(v==="n")document.documentElement.removeAttribute("data-fs");else document.documentElement.setAttribute("data-fs",FS[v]?FS[v][1]:"")};
+function rFs(){if(!$("#stBody"))return;let c=$("#fsCard");if(!c){c=document.createElement("div");c.className="card";c.id="fsCard";const a=$("#tvCard")||$("#hcCard")||$("#modeCard");if(a)a.after(c);else $("#stBody").before(c)}
+ const v=(D.loc&&D.loc.fs)||"n";c.innerHTML=`<h3>Text size</h3><p class="mut" style="margin:.3rem 0 .8rem">Makes the writing bigger on this device only.</p><div class="grp" role="group" aria-label="Text size">${Object.keys(FS).map(k=>`<button class="btn${v===k?" pri":""}" data-fs="${k}" aria-pressed="${v===k}">${FS[k][0]}</button>`).join("")}</div>`}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-fs]");if(!b||!FS[b.dataset.fs])return;D.loc=D.loc||{};D.loc.fs=b.dataset.fs;save();fsApply();rFs()});
+const st17=setTab;setTab=function(t){st17.apply(this,arguments);if(t==="settings")rFs();lab()};
+if(typeof UR!=="undefined")Object.assign(UR,{"Text size":"متن کا سائز","Normal":"عام","Large":"بڑا","Larger":"زیادہ بڑا","Makes the writing bigger on this device only.":"اس ڈیوائس پر تحریر بڑی ہو جاتی ہے۔","Skip to content":"مواد پر جائیں"});
+fsApply();lab();window.v17={lab,fsApply,rFs};window.rFs=rFs;
+})();
+
 
 
 
